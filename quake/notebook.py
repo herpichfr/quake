@@ -1,6 +1,6 @@
 # -*- coding: utf-8; -*-
 """
-Copyright (C) 2007-2018 Guake authors
+Copyright (C) 2007-2018 Quake authors
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -18,35 +18,35 @@ Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301 USA
 """
 
-from guake.about import AboutDialog
-from guake.boxes import RootTerminalBox
-from guake.boxes import TabLabelEventBox
-from guake.boxes import TerminalBox
-from guake.callbacks import MenuHideCallback
-from guake.callbacks import NotebookScrollCallback
-from guake.dialogs import PromptQuitDialog
-from guake.globals import PROMPT_ALWAYS
-from guake.globals import PROMPT_PROCESSES
-from guake.menus import mk_notebook_context_menu
-from guake.prefs import PrefsDialog
-from guake.utils import HidePrevention
-from guake.utils import gdk_is_x11_display
-from guake.utils import get_process_name
-from guake.utils import save_tabs_when_changed
+import posix
+import logging
+from quake.terminal import QuakeTerminal
+from gi.repository import Wnck
+from gi.repository import Gtk
+from gi.repository import Gdk
+from gi.repository import GObject
+from quake.about import AboutDialog
+from quake.boxes import RootTerminalBox
+from quake.boxes import TabLabelEventBox
+from quake.boxes import TerminalBox
+from quake.callbacks import MenuHideCallback
+from quake.callbacks import NotebookScrollCallback
+from quake.dialogs import PromptQuitDialog
+from quake.globals import PROMPT_ALWAYS
+from quake.globals import PROMPT_PROCESSES
+from quake.menus import mk_notebook_context_menu
+from quake.prefs import PrefsDialog
+from quake.utils import HidePrevention
+from quake.utils import gdk_is_x11_display
+from quake.utils import get_process_name
+from quake.utils import save_tabs_when_changed
 
 import gi
 import os
 
 gi.require_version("Gtk", "3.0")
 gi.require_version("Wnck", "3.0")
-from gi.repository import GObject
-from gi.repository import Gdk
-from gi.repository import Gtk
-from gi.repository import Wnck
-from guake.terminal import GuakeTerminal
 
-import logging
-import posix
 
 log = logging.getLogger(__name__)
 
@@ -93,18 +93,21 @@ class TerminalNotebook(Gtk.Notebook):
 
         # Action box
         self.pin_button = Gtk.ToggleButton(
-            image=Gtk.Image.new_from_icon_name("view-pin-symbolic", Gtk.IconSize.MENU),
+            image=Gtk.Image.new_from_icon_name(
+                "view-pin-symbolic", Gtk.IconSize.MENU),
             visible=False,
         )
         self.pin_button.connect("clicked", self.on_pin_clicked)
         self.new_page_button = Gtk.Button(
-            image=Gtk.Image.new_from_icon_name("tab-new-symbolic", Gtk.IconSize.MENU),
+            image=Gtk.Image.new_from_icon_name(
+                "tab-new-symbolic", Gtk.IconSize.MENU),
             visible=True,
         )
         self.new_page_button.connect("clicked", self.on_new_tab)
 
         self.tab_selection_button = Gtk.Button(
-            image=Gtk.Image.new_from_icon_name("pan-down-symbolic", Gtk.IconSize.MENU),
+            image=Gtk.Image.new_from_icon_name(
+                "pan-down-symbolic", Gtk.IconSize.MENU),
             visible=True,
         )
         self.popover = Gtk.Popover()
@@ -117,16 +120,18 @@ class TerminalNotebook(Gtk.Notebook):
         self.action_box.pack_start(self.tab_selection_button, 0, 0, 0)
         self.set_action_widget(self.action_box, Gtk.PackType.END)
 
-    def attach_guake(self, guake):
-        self.guake = guake
+    def attach_quake(self, quake):
+        self.quake = quake
 
-        self.guake.settings.general.onChangedValue("window-losefocus", self.on_lose_focus_toggled)
-        self.pin_button.set_visible(self.guake.settings.general.get_boolean("window-losefocus"))
+        self.quake.settings.general.onChangedValue(
+            "window-losefocus", self.on_lose_focus_toggled)
+        self.pin_button.set_visible(
+            self.quake.settings.general.get_boolean("window-losefocus"))
 
     def on_button_press(self, target, event, user_data):
         if event.button == 3:
             menu = mk_notebook_context_menu(self)
-            menu.connect("hide", MenuHideCallback(self.guake.window).on_hide)
+            menu.connect("hide", MenuHideCallback(self.quake.window).on_hide)
 
             try:
                 menu.popup_at_pointer(event)
@@ -144,7 +149,7 @@ class TerminalNotebook(Gtk.Notebook):
         return False
 
     def on_pin_clicked(self, user_data=None):
-        hide_prevention = HidePrevention(self.guake.window)
+        hide_prevention = HidePrevention(self.quake.window)
         if self.pin_button.get_active():
             hide_prevention.prevent()
         else:
@@ -189,8 +194,8 @@ class TerminalNotebook(Gtk.Notebook):
         self.popover_window.add_with_viewport(self.popover_listbox)
 
         max_height = (
-            self.guake.window.get_allocation().height - BOX_HEIGHT
-            if self.guake
+            self.quake.window.get_allocation().height - BOX_HEIGHT
+            if self.quake
             else BOX_HEIGHT * 10
         )
         height = BOX_HEIGHT * self.get_n_pages() + LISTBOX_MARGIN * 4
@@ -216,7 +221,8 @@ class TerminalNotebook(Gtk.Notebook):
                 selected_row = i
 
         # Signal
-        self.popover_listbox.connect("row-activated", self.on_popover_tab_select)
+        self.popover_listbox.connect(
+            "row-activated", self.on_popover_tab_select)
 
         # Show popup
         self.popover.set_position(Gtk.PositionType.TOP)
@@ -324,8 +330,8 @@ class TerminalNotebook(Gtk.Notebook):
         # (PromptQuitDialog) would be in here
         procs = self.get_running_fg_processes_page(page)
         if prompt == PROMPT_ALWAYS or (prompt == PROMPT_PROCESSES and procs):
-            # TODO NOTEBOOK remove call to guake
-            if not PromptQuitDialog(self.guake.window, procs, -1, None).close_tab():
+            # TODO NOTEBOOK remove call to quake
+            if not PromptQuitDialog(self.quake.window, procs, -1, None).close_tab():
                 return
 
         for terminal in page.get_terminals():
@@ -370,7 +376,7 @@ class TerminalNotebook(Gtk.Notebook):
         else:
             terminal = self.terminal_spawn(directory, open_tab_cwd)
             terminal_box.set_terminal(terminal)
-        root_terminal_box = RootTerminalBox(self.guake, self)
+        root_terminal_box = RootTerminalBox(self.quake, self)
         root_terminal_box.set_child(terminal_box)
         page_num = self.insert_page(
             root_terminal_box, None, position if position is not None else -1
@@ -379,8 +385,8 @@ class TerminalNotebook(Gtk.Notebook):
         self.show_all()  # needed to show newly added tabs and pages
         # this is needed because self.window.show_all() results in showing every
         # thing which includes the scrollbar too
-        self.guake.settings.general.triggerOnChangedValue(
-            self.guake.settings.general, "use-scrollbar"
+        self.quake.settings.general.triggerOnChangedValue(
+            self.quake.settings.general, "use-scrollbar"
         )
         # this is needed to initially set the last_terminal_focused,
         # one could also call terminal.get_parent().on_terminal_focus()
@@ -388,31 +394,33 @@ class TerminalNotebook(Gtk.Notebook):
             self.terminal_attached(terminal)
         self.hide_tabbar_if_one_tab()
 
-        if self.guake:
+        if self.quake:
             # Attack background image draw callback to root terminal box
-            root_terminal_box.connect_after("draw", self.guake.background_image_manager.draw)
+            root_terminal_box.connect_after(
+                "draw", self.quake.background_image_manager.draw)
         return root_terminal_box, page_num, terminal
 
     def hide_tabbar_if_one_tab(self):
         """Hide the tab bar if hide-tabs-if-one-tab is true and there is only one
         notebook page"""
-        if self.guake.settings.general.get_boolean("window-tabbar"):
-            if self.guake.settings.general.get_boolean("hide-tabs-if-one-tab"):
+        if self.quake.settings.general.get_boolean("window-tabbar"):
+            if self.quake.settings.general.get_boolean("hide-tabs-if-one-tab"):
                 self.set_property("show-tabs", self.get_n_pages() != 1)
             else:
                 self.set_property("show-tabs", True)
 
     def terminal_spawn(self, directory=None, open_tab_cwd=False):
-        terminal = GuakeTerminal(self.guake)
+        terminal = QuakeTerminal(self.quake)
         terminal.grab_focus()
         terminal.connect(
             "key-press-event",
-            lambda x, y: self.guake.accel_group.activate(x, y) if self.guake.accel_group else False,
+            lambda x, y: self.quake.accel_group.activate(
+                x, y) if self.quake.accel_group else False,
         )
         if not isinstance(directory, str):
             directory = os.environ["HOME"]
             try:
-                if self.guake.settings.general.get_boolean("open-tab-cwd") or open_tab_cwd:
+                if self.quake.settings.general.get_boolean("open-tab-cwd") or open_tab_cwd:
                     # Do last focused terminal still alive?
                     active_terminal = self.get_current_terminal()
                     if not active_terminal:
@@ -446,7 +454,8 @@ class TerminalNotebook(Gtk.Notebook):
         )
         self.set_current_page(page_num)
         if not label:
-            self.rename_page(page_num, self.guake.compute_tab_title(terminal), False)
+            self.rename_page(
+                page_num, self.quake.compute_tab_title(terminal), False)
         else:
             self.rename_page(page_num, label, user_set)
         if terminal is not None:
@@ -464,7 +473,7 @@ class TerminalNotebook(Gtk.Notebook):
             if isinstance(old_label, TabLabelEventBox):
                 old_label.set_text(new_text)
             else:
-                label = TabLabelEventBox(self, new_text, self.guake.settings)
+                label = TabLabelEventBox(self, new_text, self.quake.settings)
                 label.add_events(Gdk.EventMask.SCROLL_MASK)
                 label.connect("scroll-event", self.scroll_callback.on_scroll)
 
@@ -492,25 +501,25 @@ class TerminalNotebook(Gtk.Notebook):
         return self.get_tab_label(page).get_text()
 
     def on_show_preferences(self, user_data):
-        self.guake.hide()
-        PrefsDialog(self.guake.settings).show()
+        self.quake.hide()
+        PrefsDialog(self.quake.settings).show()
 
     def on_show_about(self, user_data):
-        self.guake.hide()
+        self.quake.hide()
         AboutDialog()
 
     def on_quit(self, user_data):
-        self.guake.accel_quit()
+        self.quake.accel_quit()
 
     def on_save_tabs(self, user_data):
-        self.guake.save_tabs()
+        self.quake.save_tabs()
 
     def on_restore_tabs(self, user_data):
-        self.guake.restore_tabs()
+        self.quake.restore_tabs()
 
     def on_restore_tabs_with_dialog(self, user_data):
         dialog = Gtk.MessageDialog(
-            parent=self.guake.window,
+            parent=self.quake.window,
             flags=Gtk.DialogFlags.MODAL,
             buttons=Gtk.ButtonsType.OK_CANCEL,
             message_format=_(
@@ -525,7 +534,7 @@ class TerminalNotebook(Gtk.Notebook):
     def restore_tabs_dialog_response(self, widget, response_id):
         widget.destroy()
         if response_id == Gtk.ResponseType.OK:
-            self.guake.restore_tabs()
+            self.quake.restore_tabs()
 
 
 class NotebookManager(GObject.Object):
@@ -558,7 +567,8 @@ class NotebookManager(GObject.Object):
             #
             # TODO: Is there anyway to support this in non-X11 display backend?
             self.screen = Wnck.Screen.get_default()
-            self.screen.connect("active-workspace-changed", self.__workspace_changed_cb)
+            self.screen.connect("active-workspace-changed",
+                                self.__workspace_changed_cb)
 
     def __workspace_changed_cb(self, screen, previous_workspace):
         self.set_workspace(self.screen.get_active_workspace().get_number())
@@ -566,10 +576,14 @@ class NotebookManager(GObject.Object):
     def get_notebook(self, workspace_index: int):
         if not self.has_notebook_for_workspace(workspace_index):
             self.notebooks[workspace_index] = TerminalNotebook()
-            self.emit("notebook-created", self.notebooks[workspace_index], workspace_index)
-            self.notebooks[workspace_index].connect("terminal-spawned", self.terminal_spawned_cb)
-            self.notebooks[workspace_index].connect("page-deleted", self.page_deleted_cb)
-            log.info("created fresh notebook for workspace %d", self.current_notebook)
+            self.emit("notebook-created",
+                      self.notebooks[workspace_index], workspace_index)
+            self.notebooks[workspace_index].connect(
+                "terminal-spawned", self.terminal_spawned_cb)
+            self.notebooks[workspace_index].connect(
+                "page-deleted", self.page_deleted_cb)
+            log.info("created fresh notebook for workspace %d",
+                     self.current_notebook)
 
             # add a tab if there is none
             if not self.notebooks[workspace_index].has_page():
@@ -593,10 +607,10 @@ class NotebookManager(GObject.Object):
             notebook.last_terminal_focused.grab_focus()
 
         # Restore pending page terminal split
-        notebook.guake.restore_pending_terminal_split()
+        notebook.quake.restore_pending_terminal_split()
 
         # Restore config to workspace
-        notebook.guake.load_config()
+        notebook.quake.load_config()
 
     def set_notebooks_tabbar_visible(self, v):
         for nb in self.iter_notebooks():
