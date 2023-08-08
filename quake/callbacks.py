@@ -1,16 +1,16 @@
+from urllib.parse import quote_plus
+from quake.utils import get_server_time
+from quake.utils import HidePrevention
+from quake.utils import FullscreenManager
+from quake.prefs import PrefsDialog
+from quake.globals import ENGINES
+from quake.dialogs import SaveTerminalDialog
+from quake.about import AboutDialog
+from gi.repository import Gtk
+from gi.repository import Gdk
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gdk
-from gi.repository import Gtk
-from guake.about import AboutDialog
-from guake.dialogs import SaveTerminalDialog
-from guake.globals import ENGINES
-from guake.prefs import PrefsDialog
-from guake.utils import FullscreenManager
-from guake.utils import HidePrevention
-from guake.utils import get_server_time
-from urllib.parse import quote_plus
 
 
 class TerminalContextMenuCallbacks:
@@ -62,12 +62,14 @@ class TerminalContextMenuCallbacks:
             selected = self.settings.general.get_int("search-engine")
             # if custom search is selected, get the engine from the 'custom-search-engine' setting
             if selected not in ENGINES:
-                engine = self.settings.general.get_string("custom-search-engine")
+                engine = self.settings.general.get_string(
+                    "custom-search-engine")
             else:
                 engine = ENGINES[selected]
             # put the query at the end of the url
             search_url = "https://" + engine + query
-            Gtk.show_uri(self.window.get_screen(), search_url, get_server_time(self.window))
+            Gtk.show_uri(self.window.get_screen(), search_url,
+                         get_server_time(self.window))
 
     def on_quick_open(self, *args):
         if self.terminal.get_has_selection():
@@ -77,15 +79,15 @@ class TerminalContextMenuCallbacks:
         self.terminal.execute_command(command)
 
     def on_show_preferences(self, *args):
-        self.notebook.guake.hide()
+        self.notebook.quake.hide()
         PrefsDialog(self.settings).show()
 
     def on_show_about(self, *args):
-        self.notebook.guake.hide()
+        self.notebook.quake.hide()
         AboutDialog()
 
     def on_quit(self, *args):
-        self.notebook.guake.accel_quit()
+        self.notebook.quake.accel_quit()
 
     def on_split_vertical(self, *args):
         self.terminal.get_parent().split_v()
