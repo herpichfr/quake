@@ -81,18 +81,18 @@ install-quake:
 	@echo "#############################################################"
 	@if [ "$(DESTDIR)" = "" ]; then $(PYTHON_INTERPRETER) -m pip install -r requirements.txt; fi
 
-	@if [ `python -c "import sys; print(sys.version_info[0])"` -eq 2 ]; then SETUPTOOLS_SCM_PRETEND_VERSION=3.9.0; fi
+	# @if [ `python -c "import sys; print(sys.version_info[0])"` -eq 2 ]; then SETUPTOOLS_SCM_PRETEND_VERSION=3.9.0; fi
 
-	@rm -f quake/paths.py.dev
-	@if [ -f quake/paths.py ]; then mv quake/paths.py quake/paths.py.dev; fi
-	@cp -f quake/paths.py.in quake/paths.py
-	@sed -i -e 's|{{ LOCALE_DIR }}|"$(localedir)"|g' quake/paths.py
-	@sed -i -e 's|{{ IMAGE_DIR }}|"$(IMAGE_DIR)"|g' quake/paths.py
-	@sed -i -e 's|{{ GLADE_DIR }}|"$(GLADE_DIR)"|g' quake/paths.py
-	@sed -i -e 's|{{ QUAKE_THEME_DIR }}|"$(QUAKE_THEME_DIR)"|g' quake/paths.py
-	@sed -i -e 's|{{ SCHEMA_DIR }}|"$(SCHEMA_DIR)"|g' quake/paths.py
-	@sed -i -e 's|{{ LOGIN_DESTOP_PATH }}|"$(LOGIN_DESTOP_PATH)"|g' quake/paths.py
-	@sed -i -e 's|{{ AUTOSTART_FOLDER }}|"$(AUTOSTART_FOLDER)"|g' quake/paths.py
+	# @rm -f quake/paths.py.dev
+	# @if [ -f quake/paths.py ]; then mv quake/paths.py quake/paths.py.dev; fi
+	# @cp -f quake/paths.py.in quake/paths.py
+	# @sed -i -e 's|{{ LOCALE_DIR }}|"$(localedir)"|g' quake/paths.py
+	# @sed -i -e 's|{{ IMAGE_DIR }}|"$(IMAGE_DIR)"|g' quake/paths.py
+	# @sed -i -e 's|{{ GLADE_DIR }}|"$(GLADE_DIR)"|g' quake/paths.py
+	# @sed -i -e 's|{{ QUAKE_THEME_DIR }}|"$(QUAKE_THEME_DIR)"|g' quake/paths.py
+	# @sed -i -e 's|{{ SCHEMA_DIR }}|"$(SCHEMA_DIR)"|g' quake/paths.py
+	# @sed -i -e 's|{{ LOGIN_DESTOP_PATH }}|"$(LOGIN_DESTOP_PATH)"|g' quake/paths.py
+	# @sed -i -e 's|{{ AUTOSTART_FOLDER }}|"$(AUTOSTART_FOLDER)"|g' quake/paths.py
 
 	@$(PYTHON_INTERPRETER) -m pip install . --root "$(DESTDIR)" --prefix="/usr" || echo -e "\033[31;1msetup.py install failed, you may need to run \"sudo git config --global --add safe.directory '*'\"\033[0m"
 
