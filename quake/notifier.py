@@ -1,6 +1,6 @@
 # -*- coding: utf-8; -*-
 """
-Copyright (C) 2007-2013 Guake authors
+Copyright (C) 2007-2013 Quake authors
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -18,13 +18,13 @@ Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301 USA
 """
 
+from gi.repository import Notify
+from gi.repository import GLib
 import gi
 
 gi.require_version("Notify", "0.7")
-from gi.repository import GLib
-from gi.repository import Notify
 
-Notify.init("Guake")
+Notify.init("Quake")
 
 __all__ = ["showMessage"]
 
