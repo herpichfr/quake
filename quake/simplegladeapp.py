@@ -1,6 +1,6 @@
 # -*- coding: utf-8; -*-
 """
-Copyright (C) 2007-2013 Guake authors
+Copyright (C) 2007-2013 Quake authors
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -17,6 +17,8 @@ License along with this program; if not, write to the
 Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301 USA
 """
+import tokenize
+from gi.repository import Gtk
 import os
 import re
 import sys
@@ -24,9 +26,6 @@ import sys
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-
-import tokenize
 
 
 class SimpleGladeApp:
@@ -110,7 +109,8 @@ class SimpleGladeApp:
                 prefixes_name_l = widget_name.split(":")
                 prefixes = prefixes_name_l[:-1]
                 widget_api_name = prefixes_name_l[-1]
-                widget_api_name = "_".join(re.findall(tokenize.Name, widget_api_name))
+                widget_api_name = "_".join(
+                    re.findall(tokenize.Name, widget_api_name))
                 widget_name = Gtk.Buildable.set_name(widget, widget_api_name)
                 if hasattr(self, widget_api_name):
                     raise AttributeError(
