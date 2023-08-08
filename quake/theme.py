@@ -1,3 +1,8 @@
+from quake.paths import QUAKE_THEME_DIR
+from textwrap import dedent
+from gi.repository import Gtk
+from gi.repository import Gdk
+from gi.repository import GLib
 import itertools
 import logging
 import os
@@ -7,12 +12,7 @@ from pathlib import Path
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import GLib
-from gi.repository import Gdk
-from gi.repository import Gtk
-from textwrap import dedent
 
-from guake.paths import GUAKE_THEME_DIR
 
 log = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ def get_resource_dirs(resource):
     dirs = [
         os.path.join(dir, resource)
         for dir in itertools.chain(
-            GLib.get_system_data_dirs(), GUAKE_THEME_DIR, GLib.get_user_data_dir()
+            GLib.get_system_data_dirs(), QUAKE_THEME_DIR, GLib.get_user_data_dir()
         )
     ]
     dirs += [os.path.join(os.path.expanduser("~"), f".{resource}")]
@@ -64,7 +64,8 @@ def select_gtk_theme(settings):
 
     prefer_dark_theme = settings.general.get_boolean("gtk-prefer-dark-theme")
     log.debug("Prefer dark theme: %r", prefer_dark_theme)
-    gtk_settings.set_property("gtk-application-prefer-dark-theme", prefer_dark_theme)
+    gtk_settings.set_property(
+        "gtk-application-prefer-dark-theme", prefer_dark_theme)
 
 
 def get_gtk_theme(settings):
@@ -79,8 +80,10 @@ def patch_gtk_theme(style_context, settings):
     def rgba_to_hex(color):
         return f"#{''.join(f'{int(i*255):02x}' for i in (color.red, color.green, color.blue))}"
 
-    selected_fg_color = rgba_to_hex(style_context.lookup_color("theme_selected_fg_color")[1])
-    selected_bg_color = rgba_to_hex(style_context.lookup_color("theme_selected_bg_color")[1])
+    selected_fg_color = rgba_to_hex(
+        style_context.lookup_color("theme_selected_fg_color")[1])
+    selected_bg_color = rgba_to_hex(
+        style_context.lookup_color("theme_selected_bg_color")[1])
     log.debug(
         "Patching theme '%s' (prefer dark = '%r'), overriding tab 'checked' state': "
         "foreground: %r, background: %r",
