@@ -65,7 +65,7 @@ def is_run_from_git_workdir():
     return os.path.exists(f"{self_path}.in")
 
 
-NAME = "guake"
+NAME = "quake"
 
 ALIGN_CENTER, ALIGN_LEFT, ALIGN_RIGHT = range(3)
 ALIGN_TOP, ALIGN_BOTTOM = range(2)
