@@ -1,6 +1,6 @@
 # -*- coding: utf-8; -*-
 """
-Copyright (C) 2007-2013 Guake authors
+Copyright (C) 2007-2013 quake authors
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -17,16 +17,16 @@ License along with this program; if not, write to the
 Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301 USA
 """
+from quake.utils import RectCalculator
+from gi.repository import Vte
+from gi.repository import Pango
+from gi.repository import Gio
 import logging
 import os
 
 import gi
 
 gi.require_version("Vte", "2.91")  # vte-0.38
-from gi.repository import Gio
-from gi.repository import Pango
-from gi.repository import Vte
-from guake.utils import RectCalculator
 
 log = logging.getLogger(__name__)
 
@@ -37,16 +37,16 @@ class GSettingHandler:
     different method is called to handle this change.
     """
 
-    def __init__(self, guake_inst):
-        """Constructor of GConfHandler, just add the guake dir to the
+    def __init__(self, quake_inst):
+        """Constructor of GConfHandler, just add the quake dir to the
         gconf client and bind the keys to its handler methods.
         """
-        self.guake = guake_inst
-        self.settings = guake_inst.settings
+        self.quake = quake_inst
+        self.settings = quake_inst.settings
         settings = self.settings
 
         # Notification is not required for mouse_display/display-n because
-        # set_final_window_rect polls gconf and is called whenever Guake is
+        # set_final_window_rect polls gconf and is called whenever quake is
         # shown or resized
 
         settings.general.onChangedValue("use-trayicon", self.trayicon_toggled)
@@ -58,61 +58,83 @@ class GSettingHandler:
         )
         settings.general.onChangedValue("window-height", self.size_changed)
         settings.general.onChangedValue("window-width", self.size_changed)
-        settings.general.onChangedValue("window-valignment", self.alignment_changed)
-        settings.general.onChangedValue("window-halignment", self.alignment_changed)
-        settings.general.onChangedValue("window-vertical-displacement", self.alignment_changed)
-        settings.general.onChangedValue("window-horizontal-displacement", self.alignment_changed)
-        settings.style.onChangedValue("cursor-blink-mode", self.cursor_blink_mode_changed)
-        settings.style.onChangedValue("cursor-shape", self.cursor_shape_changed)
-        settings.general.onChangedValue("background-image-file", self.background_image_file_changed)
+        settings.general.onChangedValue(
+            "window-valignment", self.alignment_changed)
+        settings.general.onChangedValue(
+            "window-halignment", self.alignment_changed)
+        settings.general.onChangedValue(
+            "window-vertical-displacement", self.alignment_changed)
+        settings.general.onChangedValue(
+            "window-horizontal-displacement", self.alignment_changed)
+        settings.style.onChangedValue(
+            "cursor-blink-mode", self.cursor_blink_mode_changed)
+        settings.style.onChangedValue(
+            "cursor-shape", self.cursor_shape_changed)
+        settings.general.onChangedValue(
+            "background-image-file", self.background_image_file_changed)
         settings.general.onChangedValue(
             "background-image-layout-mode", self.background_image_layout_mode_changed
         )
 
-        settings.general.onChangedValue("use-scrollbar", self.scrollbar_toggled)
-        settings.general.onChangedValue("history-size", self.history_size_changed)
-        settings.general.onChangedValue("infinite-history", self.infinite_history_changed)
+        settings.general.onChangedValue(
+            "use-scrollbar", self.scrollbar_toggled)
+        settings.general.onChangedValue(
+            "history-size", self.history_size_changed)
+        settings.general.onChangedValue(
+            "infinite-history", self.infinite_history_changed)
         settings.general.onChangedValue("scroll-output", self.keystroke_output)
-        settings.general.onChangedValue("scroll-keystroke", self.keystroke_toggled)
+        settings.general.onChangedValue(
+            "scroll-keystroke", self.keystroke_toggled)
 
-        settings.general.onChangedValue("use-default-font", self.default_font_toggled)
+        settings.general.onChangedValue(
+            "use-default-font", self.default_font_toggled)
         settings.styleFont.onChangedValue("style", self.fstyle_changed)
         settings.styleFont.onChangedValue("palette", self.fpalette_changed)
-        settings.styleFont.onChangedValue("allow-bold", self.allow_bold_toggled)
-        settings.styleFont.onChangedValue("bold-is-bright", self.bold_is_bright_toggled)
-        settings.styleFont.onChangedValue("cell-height-scale", self.cell_height_scale_value_changed)
-        settings.styleFont.onChangedValue("cell-width-scale", self.cell_width_scale_value_changed)
-        settings.styleBackground.onChangedValue("transparency", self.bgtransparency_changed)
+        settings.styleFont.onChangedValue(
+            "allow-bold", self.allow_bold_toggled)
+        settings.styleFont.onChangedValue(
+            "bold-is-bright", self.bold_is_bright_toggled)
+        settings.styleFont.onChangedValue(
+            "cell-height-scale", self.cell_height_scale_value_changed)
+        settings.styleFont.onChangedValue(
+            "cell-width-scale", self.cell_width_scale_value_changed)
+        settings.styleBackground.onChangedValue(
+            "transparency", self.bgtransparency_changed)
 
-        settings.general.onChangedValue("compat-backspace", self.backspace_changed)
+        settings.general.onChangedValue(
+            "compat-backspace", self.backspace_changed)
         settings.general.onChangedValue("compat-delete", self.delete_changed)
-        settings.general.onChangedValue("custom-command_file", self.custom_command_file_changed)
-        settings.general.onChangedValue("max-tab-name-length", self.max_tab_name_length_changed)
-        settings.general.onChangedValue("display-tab-names", self.display_tab_names_changed)
-        settings.general.onChangedValue("hide-tabs-if-one-tab", self.hide_tabs_if_one_tab_changed)
+        settings.general.onChangedValue(
+            "custom-command_file", self.custom_command_file_changed)
+        settings.general.onChangedValue(
+            "max-tab-name-length", self.max_tab_name_length_changed)
+        settings.general.onChangedValue(
+            "display-tab-names", self.display_tab_names_changed)
+        settings.general.onChangedValue(
+            "hide-tabs-if-one-tab", self.hide_tabs_if_one_tab_changed)
 
     def custom_command_file_changed(self, settings, key, user_data):
-        self.guake.load_custom_commands()
+        self.quake.load_custom_commands()
 
     def trayicon_toggled(self, settings, key, user_data):
         """If the gconf var use_trayicon be changed, this method will
         be called and will show/hide the trayicon.
         """
-        if hasattr(self.guake.tray_icon, "set_status"):
-            self.guake.tray_icon.set_status(settings.get_boolean(key))
+        if hasattr(self.quake.tray_icon, "set_status"):
+            self.quake.tray_icon.set_status(settings.get_boolean(key))
         else:
-            self.guake.tray_icon.set_visible(settings.get_boolean(key))
+            self.quake.tray_icon.set_visible(settings.get_boolean(key))
 
     def ontop_toggled(self, settings, key, user_data):
         """If the gconf var window_ontop be changed, this method will
-        be called and will set the keep_above attribute in guake's
+        be called and will set the keep_above attribute in quake's
         main window.
         """
-        self.guake.window.set_keep_above(settings.get_boolean(key))
+        self.quake.window.set_keep_above(settings.get_boolean(key))
 
     def tab_ontop_toggled(self, settings, key, user_data):
         """tab_ontop changed"""
-        self.guake.set_tab_position()
+        self.quake.set_tab_position()
 
     def tabbar_toggled(self, settings, key, user_data):
         """If the gconf var use_tabbar be changed, this method will be
@@ -120,61 +142,65 @@ class GSettingHandler:
         """
         if settings.get_boolean(key):
             if settings.get_boolean(key):
-                self.guake.get_notebook().hide_tabbar_if_one_tab()
+                self.quake.get_notebook().hide_tabbar_if_one_tab()
             else:
-                self.guake.notebook_manager.set_notebooks_tabbar_visible(True)
+                self.quake.notebook_manager.set_notebooks_tabbar_visible(True)
         else:
-            self.guake.notebook_manager.set_notebooks_tabbar_visible(False)
+            self.quake.notebook_manager.set_notebooks_tabbar_visible(False)
 
     def fullscreen_hide_tabbar_toggled(self, settings, key, user_data):
         """If the gconf var fullscreen_hide_tabbar be changed, this method will be
         called and will show/hide the tabbar when fullscreen.
         """
-        if not self.guake.fullscreen_manager.is_fullscreen():
+        if not self.quake.fullscreen_manager.is_fullscreen():
             return
 
         if settings.get_boolean(key):
-            self.guake.notebook_manager.set_notebooks_tabbar_visible(False)
+            self.quake.notebook_manager.set_notebooks_tabbar_visible(False)
         else:
             if settings.get_boolean(key):
-                self.guake.get_notebook().hide_tabbar_if_one_tab()
+                self.quake.get_notebook().hide_tabbar_if_one_tab()
             else:
-                self.guake.notebook_manager.set_notebooks_tabbar_visible(True)
+                self.quake.notebook_manager.set_notebooks_tabbar_visible(True)
 
     def alignment_changed(self, settings, key, user_data):
         """If the gconf var window_halignment be changed, this method will
-        be called and will call the move function in guake.
+        be called and will call the move function in quake.
         """
-        RectCalculator.set_final_window_rect(self.settings, self.guake.window)
-        self.guake.set_tab_position()
-        self.guake.force_move_if_shown()
+        RectCalculator.set_final_window_rect(self.settings, self.quake.window)
+        self.quake.set_tab_position()
+        self.quake.force_move_if_shown()
 
     def size_changed(self, settings, key, user_data):
         """If the gconf var window_height or window_width are changed,
         this method will be called and will call the resize function
-        in guake.
+        in quake.
         """
-        RectCalculator.set_final_window_rect(self.settings, self.guake.window)
+        RectCalculator.set_final_window_rect(self.settings, self.quake.window)
 
     def cursor_blink_mode_changed(self, settings, key, user_data):
         """Called when cursor blink mode settings has been changed"""
         terminal = (
-            self.guake.notebook_manager.get_terminal_by_uuid(user_data.get("terminal_uuid"))
+            self.quake.notebook_manager.get_terminal_by_uuid(
+                user_data.get("terminal_uuid"))
             if user_data
             else None
         )
-        terminals = (terminal,) if terminal else self.guake.notebook_manager.iter_terminals()
+        terminals = (
+            terminal,) if terminal else self.quake.notebook_manager.iter_terminals()
         for term in terminals:
             term.set_property("cursor-blink-mode", settings.get_int(key))
 
     def cursor_shape_changed(self, settings, key, user_data):
         """Called when the cursor shape settings has been changed"""
         terminal = (
-            self.guake.notebook_manager.get_terminal_by_uuid(user_data.get("terminal_uuid"))
+            self.quake.notebook_manager.get_terminal_by_uuid(
+                user_data.get("terminal_uuid"))
             if user_data
             else None
         )
-        terminals = (terminal,) if terminal else self.guake.notebook_manager.iter_terminals()
+        terminals = (
+            terminal,) if terminal else self.quake.notebook_manager.iter_terminals()
         for term in terminals:
             term.set_property("cursor-shape", settings.get_int(key))
 
@@ -182,22 +208,25 @@ class GSettingHandler:
         """Called when the background image file settings has been changed"""
         filename = settings.get_string(key)
         if not filename or os.path.exists(filename):
-            self.guake.background_image_manager.load_from_file(settings.get_string(key))
+            self.quake.background_image_manager.load_from_file(
+                settings.get_string(key))
 
     def background_image_layout_mode_changed(self, settings, key, user_data):
         """Called when the background image layout mode settings has been changed"""
-        self.guake.background_image_manager.layout_mode = settings.get_int(key)
+        self.quake.background_image_manager.layout_mode = settings.get_int(key)
 
     def scrollbar_toggled(self, settings, key, user_data):
         """If the gconf var use_scrollbar be changed, this method will
         be called and will show/hide scrollbars of all terminals open.
         """
         terminal = (
-            self.guake.notebook_manager.get_terminal_by_uuid(user_data.get("terminal_uuid"))
+            self.quake.notebook_manager.get_terminal_by_uuid(
+                user_data.get("terminal_uuid"))
             if user_data
             else None
         )
-        terminals = (terminal,) if terminal else self.guake.notebook_manager.iter_terminals()
+        terminals = (
+            terminal,) if terminal else self.quake.notebook_manager.iter_terminals()
         for term in terminals:
             # There is an hbox in each tab of the main notebook and it
             # contains a Terminal and a Scrollbar. Since only have the
@@ -219,11 +248,13 @@ class GSettingHandler:
         """
         lines = settings.get_int(key)
         terminal = (
-            self.guake.notebook_manager.get_terminal_by_uuid(user_data.get("terminal_uuid"))
+            self.quake.notebook_manager.get_terminal_by_uuid(
+                user_data.get("terminal_uuid"))
             if user_data
             else None
         )
-        terminals = (terminal,) if terminal else self.guake.notebook_manager.iter_terminals()
+        terminals = (
+            terminal,) if terminal else self.quake.notebook_manager.iter_terminals()
         for i in terminals:
             i.set_scrollback_lines(lines)
 
@@ -233,11 +264,13 @@ class GSettingHandler:
         else:
             lines = self.settings.general.get_int("history-size")
         terminal = (
-            self.guake.notebook_manager.get_terminal_by_uuid(user_data.get("terminal_uuid"))
+            self.quake.notebook_manager.get_terminal_by_uuid(
+                user_data.get("terminal_uuid"))
             if user_data
             else None
         )
-        terminals = (terminal,) if terminal else self.guake.notebook_manager.iter_terminals()
+        terminals = (
+            terminal,) if terminal else self.quake.notebook_manager.iter_terminals()
         for i in terminals:
             i.set_scrollback_lines(lines)
 
@@ -247,11 +280,13 @@ class GSettingHandler:
         open.
         """
         terminal = (
-            self.guake.notebook_manager.get_terminal_by_uuid(user_data.get("terminal_uuid"))
+            self.quake.notebook_manager.get_terminal_by_uuid(
+                user_data.get("terminal_uuid"))
             if user_data
             else None
         )
-        terminals = (terminal,) if terminal else self.guake.notebook_manager.iter_terminals()
+        terminals = (
+            terminal,) if terminal else self.quake.notebook_manager.iter_terminals()
         for i in terminals:
             i.set_scroll_on_output(settings.get_boolean(key))
 
@@ -261,11 +296,13 @@ class GSettingHandler:
         terminals open.
         """
         terminal = (
-            self.guake.notebook_manager.get_terminal_by_uuid(user_data.get("terminal_uuid"))
+            self.quake.notebook_manager.get_terminal_by_uuid(
+                user_data.get("terminal_uuid"))
             if user_data
             else None
         )
-        terminals = (terminal,) if terminal else self.guake.notebook_manager.iter_terminals()
+        terminals = (
+            terminal,) if terminal else self.quake.notebook_manager.iter_terminals()
         for i in terminals:
             i.set_scroll_on_keystroke(settings.get_boolean(key))
 
@@ -289,11 +326,13 @@ class GSettingHandler:
             log.error("Error: unable to load font (%s)", font_name)
             return
         terminal = (
-            self.guake.notebook_manager.get_terminal_by_uuid(user_data.get("terminal_uuid"))
+            self.quake.notebook_manager.get_terminal_by_uuid(
+                user_data.get("terminal_uuid"))
             if user_data
             else None
         )
-        terminals = (terminal,) if terminal else self.guake.notebook_manager.iter_terminals()
+        terminals = (
+            terminal,) if terminal else self.quake.notebook_manager.iter_terminals()
         for i in terminals:
             i.set_font(font)
 
@@ -303,11 +342,13 @@ class GSettingHandler:
         displaying characters in bold font.
         """
         terminal = (
-            self.guake.notebook_manager.get_terminal_by_uuid(user_data.get("terminal_uuid"))
+            self.quake.notebook_manager.get_terminal_by_uuid(
+                user_data.get("terminal_uuid"))
             if user_data
             else None
         )
-        terminals = (terminal,) if terminal else self.guake.notebook_manager.iter_terminals()
+        terminals = (
+            terminal,) if terminal else self.quake.notebook_manager.iter_terminals()
         for term in terminals:
             term.set_allow_bold(settings.get_boolean(key))
 
@@ -316,10 +357,11 @@ class GSettingHandler:
         and will change the VTE terminal to toggle auto-brightened bold text.
         """
         try:
-            terminal = self.guake.notebook_manager.get_terminal_by_uuid(
+            terminal = self.quake.notebook_manager.get_terminal_by_uuid(
                 user_data.get("terminal_uuid") if user_data else None
             )
-            terminals = (terminal,) if terminal else self.guake.notebook_manager.iter_terminals()
+            terminals = (
+                terminal,) if terminal else self.quake.notebook_manager.iter_terminals()
             for term in terminals:
                 term.set_bold_is_bright(settings.get_boolean(key))
         except:  # pylint: disable=bare-except
@@ -332,14 +374,16 @@ class GSettingHandler:
         """
         height_scale = settings.get_double(key)
         try:
-            terminal = self.guake.notebook_manager.get_terminal_by_uuid(
+            terminal = self.quake.notebook_manager.get_terminal_by_uuid(
                 user_data.get("terminal_uuid") if user_data else None
             )
-            terminals = (terminal,) if terminal else self.guake.notebook_manager.iter_terminals()
+            terminals = (
+                terminal,) if terminal else self.quake.notebook_manager.iter_terminals()
             for term in terminals:
                 term.set_cell_height_scale(height_scale)
         except:  # pylint: disable=bare-except
-            log.error("set_cell_height_scale not supported by your version of VTE")
+            log.error(
+                "set_cell_height_scale not supported by your version of VTE")
 
     def cell_width_scale_value_changed(self, settings, key, user_data):
         """If the gconf var style/font/cell-width-scale be changed, this
@@ -348,10 +392,11 @@ class GSettingHandler:
         """
         width_scale = settings.get_double(key)
         try:
-            terminal = self.guake.notebook_manager.get_terminal_by_uuid(
+            terminal = self.quake.notebook_manager.get_terminal_by_uuid(
                 user_data.get("terminal_uuid") if user_data else None
             )
-            terminals = (terminal,) if terminal else self.guake.notebook_manager.iter_terminals()
+            terminals = (
+                terminal,) if terminal else self.quake.notebook_manager.iter_terminals()
             for term in terminals:
                 term.set_cell_width_scale(width_scale)
         except:  # pylint: disable=bare-except
@@ -362,7 +407,8 @@ class GSettingHandler:
         will be called and will change the font color and the background color to the color
         defined in the palette.
         """
-        self.settings.styleFont.triggerOnChangedValue(self.settings.styleFont, "palette")
+        self.settings.styleFont.triggerOnChangedValue(
+            self.settings.styleFont, "palette")
 
     def fstyle_changed(self, settings, key, user_data):
         """If the gconf var style/font/style be changed, this method
@@ -372,10 +418,11 @@ class GSettingHandler:
         terminal_uuid = user_data.get("terminal_uuid") if user_data else None
 
         if terminal_uuid:
-            terminal = self.guake.notebook_manager.get_terminal_by_uuid(terminal_uuid)
+            terminal = self.quake.notebook_manager.get_terminal_by_uuid(
+                terminal_uuid)
             terminals = (terminal,) if terminal else ()
         else:
-            terminals = self.guake.notebook_manager.iter_terminals()
+            terminals = self.quake.notebook_manager.iter_terminals()
 
         if self.settings.general.get_boolean("use-default-font"):
             gio_settings = Gio.Settings(schema="org.gnome.desktop.interface")
@@ -392,7 +439,7 @@ class GSettingHandler:
         will be called and will change the color scheme in all terminals
         open.
         """
-        self.guake.set_colors_from_settings(
+        self.quake.set_colors_from_settings(
             terminal_uuid=user_data.get("terminal_uuid") if user_data else None
         )
 
@@ -401,7 +448,7 @@ class GSettingHandler:
         method will be called and will set the saturation and transparency
         properties in all terminals open.
         """
-        self.guake.set_background_color_from_settings(
+        self.quake.set_background_color_from_settings(
             terminal_uuid=user_data.get("terminal_uuid") if user_data else None
         )
 
@@ -423,13 +470,16 @@ class GSettingHandler:
         all terminals open.
         """
         terminal = (
-            self.guake.notebook_manager.get_terminal_by_uuid(user_data.get("terminal_uuid"))
+            self.quake.notebook_manager.get_terminal_by_uuid(
+                user_data.get("terminal_uuid"))
             if user_data
             else None
         )
-        terminals = (terminal,) if terminal else self.guake.notebook_manager.iter_terminals()
+        terminals = (
+            terminal,) if terminal else self.quake.notebook_manager.iter_terminals()
         for i in terminals:
-            i.set_backspace_binding(self.getEraseBinding(settings.get_string(key)))
+            i.set_backspace_binding(
+                self.getEraseBinding(settings.get_string(key)))
 
     def delete_changed(self, settings, key, user_data):
         """If the gconf var compat_delete be changed, this method
@@ -437,13 +487,16 @@ class GSettingHandler:
         all terminals open.
         """
         terminal = (
-            self.guake.notebook_manager.get_terminal_by_uuid(user_data.get("terminal_uuid"))
+            self.quake.notebook_manager.get_terminal_by_uuid(
+                user_data.get("terminal_uuid"))
             if user_data
             else None
         )
-        terminals = (terminal,) if terminal else self.guake.notebook_manager.iter_terminals()
+        terminals = (
+            terminal,) if terminal else self.quake.notebook_manager.iter_terminals()
         for i in terminals:
-            i.set_delete_binding(self.getEraseBinding(settings.get_string(key)))
+            i.set_delete_binding(
+                self.getEraseBinding(settings.get_string(key)))
 
     def max_tab_name_length_changed(self, settings, key, user_data):
         """If the gconf var max_tab_name_length be changed, this method will
@@ -451,28 +504,28 @@ class GSettingHandler:
         """
 
         # avoid get window title before terminal is ready
-        if self.guake.notebook_manager.get_current_notebook().get_current_terminal() is None:
+        if self.quake.notebook_manager.get_current_notebook().get_current_terminal() is None:
             return
         # avoid get window title before terminal is ready
         if (
-            self.guake.notebook_manager.get_current_notebook()
+            self.quake.notebook_manager.get_current_notebook()
             .get_current_terminal()
             .get_window_title()
             is None
         ):
             return
 
-        self.guake.recompute_tabs_titles()
+        self.quake.recompute_tabs_titles()
 
     def display_tab_names_changed(self, settings, key, user_data):
         """If the gconf var display-tab-names was changed, this method will
         be called and will update tab names.
         """
-        self.guake.display_tab_names = settings.get_int("display-tab-names")
-        self.guake.recompute_tabs_titles()
+        self.quake.display_tab_names = settings.get_int("display-tab-names")
+        self.quake.recompute_tabs_titles()
 
     def hide_tabs_if_one_tab_changed(self, settings, key, user_data):
         """If the gconf var hide-tabs-if-one-tab was changed, this method will
         be called and will show/hide the tab bar if necessary
         """
-        self.guake.get_notebook().hide_tabbar_if_one_tab()
+        self.quake.get_notebook().hide_tabbar_if_one_tab()
