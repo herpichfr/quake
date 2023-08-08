@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 
+from quake import vte_version
+from quake import vte_runtime_version
+from quake import quake_version
+from quake import gtk_version
+from gi.repository import Gdk
 import os
 
 import gi
 
 gi.require_version("Gdk", "3.0")
-
-from gi.repository import Gdk
-
-from guake import gtk_version
-from guake import guake_version
-from guake import vte_runtime_version
-from guake import vte_version
 
 
 def horizonal_line():
@@ -31,7 +29,8 @@ def populate_display(display):
     n_monitors = display.get_n_monitors()
     for i in range(n_monitors):
         monitor = display.get_monitor(i)
-        v = " ".join(j for j in (monitor.get_manufacturer(), monitor.get_model()) if j)
+        v = " ".join(j for j in (
+            monitor.get_manufacturer(), monitor.get_model()) if j)
         print(f"* Monitor: {i} - {v}")
 
         # Geometry
@@ -55,13 +54,14 @@ def populate_display(display):
         print(f"    * Refresh rate:\t{v}")
 
         # Subpixel layout
-        print(f"    * Subpixel layout:\t{monitor.get_subpixel_layout().value_nick}")
+        print(
+            f"    * Subpixel layout:\t{monitor.get_subpixel_layout().value_nick}")
 
 
 def get_version():
     display = Gdk.Display.get_default()
 
-    print(f"Guake Version:\t\t{guake_version()}")
+    print(f"Quake Version:\t\t{quake_version()}")
     print()
     print(f"Vte Version:\t\t{vte_version()}")
     print()
@@ -87,7 +87,7 @@ def get_display():
 
 
 def print_support():
-    print("<details><summary>$ guake --support</summary>")
+    print("<details><summary>$ quake --support</summary>")
     print()
     get_version()
     get_desktop_session()
