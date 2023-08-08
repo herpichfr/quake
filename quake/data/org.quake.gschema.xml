@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <schemalist>
-    <schema id="guake" path="/org/guake/">
-        <child name="general" schema="guake.general"/>
-        <child name="style" schema="guake.style"/>
-        <child name="keybindings" schema="guake.keybindings"/>
+    <schema id="quake" path="/org/quake/">
+        <child name="general" schema="quake.general"/>
+        <child name="style" schema="quake.style"/>
+        <child name="keybindings" schema="quake.keybindings"/>
     </schema>
-    <schema id="guake.general" path="/org/guake/general/">
+    <schema id="quake.general" path="/org/quake/general/">
         <key name="schema-version" type="s">
             <default>''</default>
             <summary>Last used schema version</summary>
-            <description>If schema version is not equal to current guake version, the schema file is regenerated and this flag is set to the current guake version.</description>
+            <description>If schema version is not equal to current quake version, the schema file is regenerated and this flag is set to the current quake version.</description>
         </key>
         <key name="debug-mode" type="b">
             <default>false</default>
             <summary>Enable debug mode</summary>
-            <description>When debug mode is enabled, logs are printed in the standard output where Guake as been launched</description>
+            <description>When debug mode is enabled, logs are printed in the standard output where Quake as been launched</description>
         </key>
         <key name="mouse-display" type="b">
             <default>true</default>
@@ -29,27 +29,27 @@
         <key name="default-shell" type="s">
             <default>''</default>
             <summary>Path to the default shell.</summary>
-            <description>Path to the default shell. Set to empty to use default user shell. If invalid path is set here, guake will fallback to user shell.</description>
+            <description>Path to the default shell. Set to empty to use default user shell. If invalid path is set here, quake will fallback to user shell.</description>
         </key>
 		<key name="restore-tabs-startup" type="b">
 		    <default>true</default>
 		    <summary>Restore tabs when startup</summary>
-		    <description>If true, when guake startup, it will restore tabs from previous session</description>
+		    <description>If true, when quake startup, it will restore tabs from previous session</description>
 		</key>
 		<key name="restore-tabs-notify" type="b">
 		    <default>true</default>
 		    <summary>Notify when restored the tabs</summary>
-		    <description>If true, when guake restored the tabs, it will notify the user that the tabs has been restored</description>
+		    <description>If true, when quake restored the tabs, it will notify the user that the tabs has been restored</description>
 		</key>
 		<key name="save-tabs-when-changed" type="b">
 		    <default>true</default>
 		    <summary>Automatically save tabs session when changed</summary>
 		    <description>If true, when tabs has changed (add / delete ...etc.), it will automatically saved the tabs session</description>
 		</key>
-		<key name="load-guake-yml" type="b">
+		<key name="load-quake-yml" type="b">
 		    <default>true</default>
-		    <summary>Load settings from guake.yml</summary>
-		    <description>If true, when a change in the cwd is detected settings are changed based on the content of the file `cwd`/.guake.yml</description>
+		    <summary>Load settings from quake.yml</summary>
+		    <description>If true, when a change in the cwd is detected settings are changed based on the content of the file `cwd`/.quake.yml</description>
 		</key>
         <key name="use-login-shell" type="b">
             <default>false</default>
@@ -69,12 +69,12 @@
         <key name="use-popup" type="b">
             <default>true</default>
             <summary>Sets the popup notifications visibility.</summary>
-            <description>When true, popup notifications will be shown when Guake starts.</description>
+            <description>When true, popup notifications will be shown when Quake starts.</description>
         </key>
         <key name="prompt-on-quit" type="b">
             <default>true</default>
             <summary>Prompt when quitting.</summary>
-            <description>Ask for confirmation when quitting Guake.</description>
+            <description>Ask for confirmation when quitting Quake.</description>
         </key>
         <key name="prompt-on-close-tab" type="i">
             <default>0</default>
@@ -94,7 +94,7 @@
         <key name="window-ontop" type="b">
             <default>true</default>
             <summary>Stay on top.</summary>
-            <description>Makes guake window be on top of all other windows in the desktop.</description>
+            <description>Makes quake window be on top of all other windows in the desktop.</description>
         </key>
          <key name="window-refocus" type="b">
             <default>false</default>
@@ -104,7 +104,7 @@
         <key name="tab-ontop" type="b">
             <default>false</default>
             <summary>Tab on top.</summary>
-            <description>Makes tab bar on top of the Guake window. Per default, tabs appear below the terminal. Setting this to True will move the tab on top of the terminal. Requires a restart.</description>
+            <description>Makes tab bar on top of the Quake window. Per default, tabs appear below the terminal. Setting this to True will move the tab on top of the terminal. Requires a restart.</description>
         </key>
         <key name="new-tab-after" type="b">
             <default>false</default>
@@ -113,13 +113,13 @@
         </key>
         <key name="window-losefocus" type="b">
             <default>false</default>
-            <summary>Determine if guake hides on lose focus.</summary>
-            <description>If this property is set as true, guake will be hidden when the main window lose the focus (when Alt+Tab be pressed for example).</description>
+            <summary>Determine if quake hides on lose focus.</summary>
+            <description>If this property is set as true, quake will be hidden when the main window lose the focus (when Alt+Tab be pressed for example).</description>
         </key>
         <key name="lazy-losefocus" type="b">
             <default>false</default>
             <summary>Delay hiding on losing focus.</summary>
-            <description>Momentarily delay hiding Guake when focus is lost and don't hide if focus is returned quickly, like when switching desktops or turning on certain IMEs.</description>
+            <description>Momentarily delay hiding Quake when focus is lost and don't hide if focus is returned quickly, like when switching desktops or turning on certain IMEs.</description>
         </key>
         <key name="window-tabbar" type="b">
             <default>true</default>
@@ -139,7 +139,7 @@
         <key name="quick-open-enable" type="b">
             <default>false</default>
             <summary>Enable Quick Open feature.</summary>
-            <description>If this property is set as true, guake will open a text editor when the user does a Ctrl+Click on a filename printed in the terminal.</description>
+            <description>If this property is set as true, quake will open a text editor when the user does a Ctrl+Click on a filename printed in the terminal.</description>
         </key>
         <key name="quick-open-command-line" type="s">
             <default>'gedit %(file_path)s'</default>
@@ -149,12 +149,12 @@
         <key name="quick-open-in-current-terminal" type="b">
             <default>false</default>
             <summary>Quick open the file in the current terminal.</summary>
-            <description>If this property is set as true, guake will use the current terminal to execute the Quick open feature. Use if you want to inherit your terminal environment in your text editor</description>
+            <description>If this property is set as true, quake will use the current terminal to execute the Quick open feature. Use if you want to inherit your terminal environment in your text editor</description>
         </key>
         <key name="startup-script" type="s">
             <default>''</default>
-            <summary>Startup script to execute when guake starts</summary>
-            <description>This property allows you to execute a startup bash script each time guake starts. You can configure your initial tab settings within this script. Please see the command line argument of guake ('guake --help') for complete help.</description>
+            <summary>Startup script to execute when quake starts</summary>
+            <description>This property allows you to execute a startup bash script each time quake starts. You can configure your initial tab settings within this script. Please see the command line argument of quake ('quake --help') for complete help.</description>
         </key>
         <key name="start-fullscreen" type="b">
             <default>false</default>
@@ -174,12 +174,12 @@
         <key name="window-width" type="i">
             <default>100</default>
             <summary>Window width.</summary>
-            <description>Percent of the screen that will be used by guake terminal horizontally.</description>
+            <description>Percent of the screen that will be used by quake terminal horizontally.</description>
         </key>
         <key name="window-height" type="i">
             <default>50</default>
             <summary>Window height.</summary>
-            <description>Percent of the screen that will be used by guake terminal vertically.</description>
+            <description>Percent of the screen that will be used by quake terminal vertically.</description>
         </key>
         <key name="window-horizontal-displacement" type="i">
             <default>0</default>
@@ -194,17 +194,17 @@
         <key name="window-halignment" type="i">
             <default>0</default>
             <summary>Window horizontal alignment.</summary>
-            <description>Place Guake at: 0: center, 1: left, 2: right</description>
+            <description>Place Quake at: 0: center, 1: left, 2: right</description>
         </key>
         <key name="window-valignment" type="i">
             <default>0</default>
             <summary>Window vertical alignment.</summary>
-            <description>Place Guake at: 0: top, 1: bottom</description>
+            <description>Place Quake at: 0: top, 1: bottom</description>
         </key>
         <key name="background-image-file" type="s">
             <default>''</default>
             <summary>Background image filename.</summary>
-            <description>When setup, the selected background image will show on guake</description>
+            <description>When setup, the selected background image will show on quake</description>
         </key>
         <key name="background-image-layout-mode" type="i">
             <default>0</default>
@@ -239,7 +239,7 @@
         <key name="use-default-font" type="b">
             <default>true</default>
             <summary>Use default font</summary>
-            <description>If true, Guake will use the GNOME monospace default font.</description>
+            <description>If true, Quake will use the GNOME monospace default font.</description>
         </key>
         <key name="use-vte-titles" type="b">
             <default>true</default>
@@ -249,7 +249,7 @@
         <key name="set-window-title" type="b">
             <default>false</default>
             <summary>Set window title to current tab name</summary>
-            <description>If true, Guake will update its window title from the current tab name. It is useful when you work with applications that use windows title, (keepass, automatic time tracker apps)</description>
+            <description>If true, Quake will update its window title from the current tab name. It is useful when you work with applications that use windows title, (keepass, automatic time tracker apps)</description>
         </key>
         <key name="compat-backspace" type="s">
             <default>'ascii-delete'</default>
@@ -269,15 +269,15 @@
         <key name="toolbar-visible-in-fullscreen" type="b">
             <default>true</default>
             <summary>If the tabs bar must be visible in fullscreen</summary>
-            <description>Set it as false to enjoy guake's fullscreen.</description>
+            <description>Set it as false to enjoy quake's fullscreen.</description>
         </key>
         <key name="focus-if-open" type="b">
             <default>true</default>
-            <summary>Give focus to guake if tab is opened (OBSOLETE).</summary>
-            <description>If the guake window is out of focus but open, enabling this will give it back the focus instead of closing the window.</description>
+            <summary>Give focus to quake if tab is opened (OBSOLETE).</summary>
+            <description>If the quake window is out of focus but open, enabling this will give it back the focus instead of closing the window.</description>
         </key>
         <key name="custom-command-file" type="s">
-            <default>'~/.config/guake/custom_command.json'</default>
+            <default>'~/.config/quake/custom_command.json'</default>
             <summary>Path to the default custom command json file.</summary>
             <description>Path to the default custom command json file. If is blank or the json file is not in a proper format the terminal context menu will be built without custom commands. If the file is a valid json with recognized structure theterminak context menu will be built with the commands read inside.</description>
         </key>
@@ -304,7 +304,7 @@
         <key name="gtk-theme-name" type="s">
             <default>''</default>
             <summary>GTK Theme name</summary>
-            <description>Name of the GTK theme to apply on Guake. If set to an empty string, let GTK use the default system theme</description>
+            <description>Name of the GTK theme to apply on Quake. If set to an empty string, let GTK use the default system theme</description>
         </key>
         <key name="gtk-prefer-dark-theme" type="b">
             <default>false</default>
@@ -322,7 +322,7 @@
             <description>Copy the selected text.</description>
         </key>
     </schema>
-    <schema id="guake.style" path="/org/guake/style/">
+    <schema id="quake.style" path="/org/quake/style/">
         <key name="cursor-blink-mode" type="i">
             <default>0</default>
             <summary>Cursor blink mode of the terminal</summary>
@@ -333,10 +333,10 @@
             <summary>Cursor shape of the terminal</summary>
             <description>Controls the shape of the cursor in the terminals. 0: Block, 1: I-Beam, 2: Underline</description>
         </key>
-        <child name="font" schema="guake.style.font"/>
-        <child name="background" schema="guake.style.background"/>
+        <child name="font" schema="quake.style.font"/>
+        <child name="background" schema="quake.style.background"/>
     </schema>
-    <schema id="guake.style.font" path="/org/guake/style/font/">
+    <schema id="quake.style.font" path="/org/quake/style/font/">
         <key name="style" type="s">
             <default>'Monospace 10'</default>
             <summary>Font style.</summary>
@@ -354,8 +354,8 @@
         </key>
          <key name="allow-bold" type="b">
             <default>true</default>
-            <summary>Allow displaying bold font in Guake terminal.</summary>
-            <description>When allow_bold is disabled, any text in Guake terminal intended to print as bold text will be instead rendered as normal text.</description>
+            <summary>Allow displaying bold font in Quake terminal.</summary>
+            <description>When allow_bold is disabled, any text in Quake terminal intended to print as bold text will be instead rendered as normal text.</description>
         </key>
         <key name="bold-is-bright" type="b">
             <default>false</default>
@@ -373,7 +373,7 @@
             <description>This can be used to increase the letter spacing. (The font's width is not affected.) Valid values go from 1.0 (default) to 2.0 ("double spacing").</description>
         </key>
     </schema>
-    <schema id="guake.style.background" path="/org/guake/style/background/">
+    <schema id="quake.style.background" path="/org/quake/style/background/">
         <key name="transparency" type="i">
             <default>90</default>
             <range min="0" max="100"/>
@@ -381,23 +381,23 @@
             <description>Alpha that will be applied to the terminal background.</description>
         </key>
     </schema>
-    <schema id="guake.keybindings" path="/org/guake/keybindings/">
-        <child name="global" schema="guake.keybindings.global"/>
-        <child name="local" schema="guake.keybindings.local"/>
+    <schema id="quake.keybindings" path="/org/quake/keybindings/">
+        <child name="global" schema="quake.keybindings.global"/>
+        <child name="local" schema="quake.keybindings.local"/>
     </schema>
-    <schema id="guake.keybindings.global" path="/org/guake/keybindings/global/">
+    <schema id="quake.keybindings.global" path="/org/quake/keybindings/global/">
         <key name="show-hide" type="s">
             <default>'F12'</default>
-            <summary>Keybinding to show/hide guake.</summary>
-            <description>Global keybinding to allow user call guake from each place after it's opened without clicks.</description>
+            <summary>Keybinding to show/hide quake.</summary>
+            <description>Global keybinding to allow user call quake from each place after it's opened without clicks.</description>
         </key>
         <key name="show-focus" type="s">
             <default>''</default>
-            <summary>Keybinding to show and focus guake.</summary>
-            <description>Global keybinding to allow user call guake from each place after it's opened without clicks.</description>
+            <summary>Keybinding to show and focus quake.</summary>
+            <description>Global keybinding to allow user call quake from each place after it's opened without clicks.</description>
         </key>
     </schema>
-    <schema id="guake.keybindings.local" path="/org/guake/keybindings/local/">
+    <schema id="quake.keybindings.local" path="/org/quake/keybindings/local/">
         <key name="search-terminal" type="s">
             <default>'&lt;Control&gt;&lt;Shift&gt;f'</default>
             <summary>Search terminal</summary>
@@ -406,22 +406,22 @@
         <key name="quit" type="s">
             <default>'&lt;Control&gt;&lt;Shift&gt;q'</default>
             <summary>Quit</summary>
-            <description>Quit Guake.</description>
+            <description>Quit Quake.</description>
         </key>
         <key name="new-tab" type="s">
             <default>'&lt;Control&gt;&lt;Shift&gt;t'</default>
             <summary>Add a new tab.</summary>
-            <description>Calls the function to add a new tab in guake window.</description>
+            <description>Calls the function to add a new tab in quake window.</description>
         </key>
         <key name="new-tab-home" type="s">
             <default>'&lt;Control&gt;&lt;Shift&gt;h'</default>
             <summary>Add a new tab in home directory.</summary>
-            <description>Calls the function to add a new home directory tab in guake window.</description>
+            <description>Calls the function to add a new home directory tab in quake window.</description>
         </key>
         <key name="new-tab-cwd" type="s">
             <default>'&lt;Super&gt;t'</default>
             <summary>Add a new tab in current directory.</summary>
-            <description>Calls the function to add a new tab in guake window, in the same directory as the current tab.</description>
+            <description>Calls the function to add a new tab in quake window, in the same directory as the current tab.</description>
         </key>
         <key name="close-tab" type="s">
             <default>'&lt;Control&gt;&lt;Shift&gt;w'</default>
@@ -576,12 +576,12 @@
         <key name="toggle-fullscreen" type="s">
             <default>'F11'</default>
             <summary>Toggle Fullscreen.</summary>
-            <description>Toggle main guake window fullscreen.</description>
+            <description>Toggle main quake window fullscreen.</description>
         </key>
         <key name="toggle-hide-on-lose-focus" type="s">
             <default>'&lt;Control&gt;&lt;Shift&gt;F1'</default>
             <summary>Toggle hide on lose focus.</summary>
-            <description>Toggle whether guake will hide when it loses focus.</description>
+            <description>Toggle whether quake will hide when it loses focus.</description>
         </key>
         <key name="reset-terminal" type="s">
             <default>''</default>
@@ -654,7 +654,7 @@
             <description>Move the terminal split handle right.</description>
         </key>
     </schema>
-    <schema id="guake.hooks" path="/org/guake/hooks/">
+    <schema id="quake.hooks" path="/org/quake/hooks/">
         <key name="show" type="s">
             <default>''</default>
             <summary>On show.</summary>
