@@ -1,6 +1,6 @@
 # -*- coding: utf-8; -*-
 """
-Copyright (C) 2007-2013 Guake authors
+Copyright (C) 2007-2013 Quake authors
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -21,7 +21,7 @@ Boston, MA 02110-1301 USA
 # pylint: disable=import-outside-toplevel
 
 
-def guake_version():
+def quake_version():
     from ._version import version
 
     return version
