@@ -3,16 +3,16 @@
 
 import pytest
 
-from guake.notebook import TerminalNotebook
+from quake.notebook import TerminalNotebook
 
 
 @pytest.fixture
 def nb(mocker):
     targets = [
-        "guake.notebook.TerminalNotebook.terminal_spawn",
-        "guake.notebook.TerminalNotebook.terminal_attached",
-        "guake.notebook.TerminalNotebook.guake",
-        "guake.notebook.TerminalBox.set_terminal",
+        "quake.notebook.TerminalNotebook.terminal_spawn",
+        "quake.notebook.TerminalNotebook.terminal_attached",
+        "quake.notebook.TerminalNotebook.quake",
+        "quake.notebook.TerminalBox.set_terminal",
     ]
     for target in targets:
         mocker.patch(target, create=True)
