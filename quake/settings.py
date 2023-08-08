@@ -18,13 +18,13 @@ License along with this program; if not, write to the
 Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301 USA
 """
+from gi.repository import Gio
 import logging
 import subprocess
 
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gio
 
 log = logging.getLogger(__name__)
 
@@ -34,14 +34,16 @@ class Settings:
         Settings.compat()
         Settings.enhanceSetting()
 
-        self.guake = Gio.Settings.new_full(
-            Gio.SettingsSchemaSource.lookup(schema_source, "guake", False), None, None
+        self.quake = Gio.Settings.new_full(
+            Gio.SettingsSchemaSource.lookup(
+                schema_source, "quake", False), None, None
         )
-        self.guake.initEnhancements()
-        self.guake.connect("changed", self.guake.triggerOnChangedValue)
+        self.quake.initEnhancements()
+        self.quake.connect("changed", self.quake.triggerOnChangedValue)
 
         self.general = Gio.Settings.new_full(
-            Gio.SettingsSchemaSource.lookup(schema_source, "guake.general", False),
+            Gio.SettingsSchemaSource.lookup(
+                schema_source, "quake.general", False),
             None,
             None,
         )
@@ -49,39 +51,48 @@ class Settings:
         self.general.connect("changed", self.general.triggerOnChangedValue)
 
         self.keybindings = Gio.Settings.new_full(
-            Gio.SettingsSchemaSource.lookup(schema_source, "guake.keybindings", False),
+            Gio.SettingsSchemaSource.lookup(
+                schema_source, "quake.keybindings", False),
             None,
             None,
         )
         self.keybindings.initEnhancements()
-        self.keybindings.connect("changed", self.keybindings.triggerOnChangedValue)
+        self.keybindings.connect(
+            "changed", self.keybindings.triggerOnChangedValue)
 
         self.keybindingsGlobal = Gio.Settings.new_full(
-            Gio.SettingsSchemaSource.lookup(schema_source, "guake.keybindings.global", False),
+            Gio.SettingsSchemaSource.lookup(
+                schema_source, "quake.keybindings.global", False),
             None,
             None,
         )
         self.keybindingsGlobal.initEnhancements()
-        self.keybindingsGlobal.connect("changed", self.keybindingsGlobal.triggerOnChangedValue)
+        self.keybindingsGlobal.connect(
+            "changed", self.keybindingsGlobal.triggerOnChangedValue)
 
         self.keybindingsLocal = Gio.Settings.new_full(
-            Gio.SettingsSchemaSource.lookup(schema_source, "guake.keybindings.local", False),
+            Gio.SettingsSchemaSource.lookup(
+                schema_source, "quake.keybindings.local", False),
             None,
             None,
         )
         self.keybindingsLocal.initEnhancements()
-        self.keybindingsLocal.connect("changed", self.keybindingsLocal.triggerOnChangedValue)
+        self.keybindingsLocal.connect(
+            "changed", self.keybindingsLocal.triggerOnChangedValue)
 
         self.styleBackground = Gio.Settings.new_full(
-            Gio.SettingsSchemaSource.lookup(schema_source, "guake.style.background", False),
+            Gio.SettingsSchemaSource.lookup(
+                schema_source, "quake.style.background", False),
             None,
             None,
         )
         self.styleBackground.initEnhancements()
-        self.styleBackground.connect("changed", self.styleBackground.triggerOnChangedValue)
+        self.styleBackground.connect(
+            "changed", self.styleBackground.triggerOnChangedValue)
 
         self.styleFont = Gio.Settings.new_full(
-            Gio.SettingsSchemaSource.lookup(schema_source, "guake.style.font", False),
+            Gio.SettingsSchemaSource.lookup(
+                schema_source, "quake.style.font", False),
             None,
             None,
         )
@@ -89,7 +100,8 @@ class Settings:
         self.styleFont.connect("changed", self.styleFont.triggerOnChangedValue)
 
         self.style = Gio.Settings.new_full(
-            Gio.SettingsSchemaSource.lookup(schema_source, "guake.style", False),
+            Gio.SettingsSchemaSource.lookup(
+                schema_source, "quake.style", False),
             None,
             None,
         )
@@ -97,7 +109,8 @@ class Settings:
         self.style.connect("changed", self.style.triggerOnChangedValue)
 
         self.hooks = Gio.Settings.new_full(
-            Gio.SettingsSchemaSource.lookup(schema_source, "guake.hooks", False),
+            Gio.SettingsSchemaSource.lookup(
+                schema_source, "quake.hooks", False),
             None,
             None,
         )
@@ -124,15 +137,16 @@ class Settings:
 
     def compat():
         try:
-            if len(subprocess.check_output(["dconf", "dump", "/org/guake/"])) == 0:
-                prefs = subprocess.check_output(["dconf", "dump", "/apps/guake/"])
+            if len(subprocess.check_output(["dconf", "dump", "/org/quake/"])) == 0:
+                prefs = subprocess.check_output(
+                    ["dconf", "dump", "/apps/quake/"])
                 if len(prefs) > 0:
                     with subprocess.Popen(
-                        ["dconf", "load", "/org/guake/"], stdin=subprocess.PIPE
+                        ["dconf", "load", "/org/quake/"], stdin=subprocess.PIPE
                     ) as p:
                         p.communicate(input=prefs)
         except FileNotFoundError:
             log.exception(
-                """First run with newer Guake version detected.
+                """First run with newer Quake version detected.
 dconf not installed, skipping preferences transfer."""
             )
