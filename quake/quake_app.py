@@ -18,6 +18,45 @@ License along with this program; if not, write to the
 Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301 USA
 """
+from quake.utils import save_tabs_when_changed
+from quake.utils import get_server_time
+from quake.utils import TabNameUtils
+from quake.utils import RectCalculator
+from quake.utils import HidePrevention
+from quake.utils import FullscreenManager
+from quake.utils import FileManager
+from quake.utils import BackgroundImageManager
+from quake.theme import select_gtk_theme
+from quake.theme import patch_gtk_theme
+from quake.simplegladeapp import SimpleGladeApp
+from quake.settings import Settings
+from quake.prefs import refresh_user_start
+from quake.prefs import PrefsDialog
+from quake.paths import try_to_compile_glib_schemas
+from quake.paths import SCHEMA_DIR
+from quake.paths import LOCALE_DIR
+from quake.palettes import PALETTES
+from quake.notebook import NotebookManager
+from quake.keybindings import Keybindings
+from quake.gsettings import GSettingHandler
+from quake.globals import TABS_SESSION_SCHEMA_VERSION
+from quake.globals import PROMPT_PROCESSES
+from quake.globals import PROMPT_ALWAYS
+from quake.globals import NAME
+from quake.globals import MAX_TRANSPARENCY
+from quake.dialogs import PromptQuitDialog
+from quake.common import pixmapfile
+from quake.common import gladefile
+from quake.about import AboutDialog
+from quake import vte_version
+from quake import notifier
+from quake import quake_version
+from quake import gtk_version
+from gi.repository import Keybinder
+from gi.repository import Gtk
+from gi.repository import Gio
+from gi.repository import Gdk
+from gi.repository import GLib
 import json
 import logging
 import os
@@ -38,46 +77,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
 gi.require_version("Keybinder", "3.0")
-from gi.repository import GLib
-from gi.repository import Gdk
-from gi.repository import Gio
-from gi.repository import Gtk
-from gi.repository import Keybinder
 
-from guake import gtk_version
-from guake import guake_version
-from guake import notifier
-from guake import vte_version
-from guake.about import AboutDialog
-from guake.common import gladefile
-from guake.common import pixmapfile
-from guake.dialogs import PromptQuitDialog
-from guake.globals import MAX_TRANSPARENCY
-from guake.globals import NAME
-from guake.globals import PROMPT_ALWAYS
-from guake.globals import PROMPT_PROCESSES
-from guake.globals import TABS_SESSION_SCHEMA_VERSION
-from guake.gsettings import GSettingHandler
-from guake.keybindings import Keybindings
-from guake.notebook import NotebookManager
-from guake.palettes import PALETTES
-from guake.paths import LOCALE_DIR
-from guake.paths import SCHEMA_DIR
-from guake.paths import try_to_compile_glib_schemas
-from guake.prefs import PrefsDialog
-from guake.prefs import refresh_user_start
-from guake.settings import Settings
-from guake.simplegladeapp import SimpleGladeApp
-from guake.theme import patch_gtk_theme
-from guake.theme import select_gtk_theme
-from guake.utils import BackgroundImageManager
-from guake.utils import FileManager
-from guake.utils import FullscreenManager
-from guake.utils import HidePrevention
-from guake.utils import RectCalculator
-from guake.utils import TabNameUtils
-from guake.utils import get_server_time
-from guake.utils import save_tabs_when_changed
 
 log = logging.getLogger(__name__)
 
@@ -97,9 +97,9 @@ GDK_WINDOW_STATE_STICKY = 8
 GDK_WINDOW_STATE_ABOVE = 32
 
 
-class Guake(SimpleGladeApp):
+class Quake(SimpleGladeApp):
 
-    """Guake main class. Handles specialy the main window."""
+    """Quake main class. Handles specialy the main window."""
 
     def __init__(self):
         def load_schema():
@@ -120,26 +120,29 @@ class Guake(SimpleGladeApp):
 
         if (
             "schema-version" not in self.settings.general.keys()
-            or self.settings.general.get_string("schema-version") != guake_version()
+            or self.settings.general.get_string("schema-version") != quake_version()
         ):
-            log.exception("Schema from old guake version detected, regenerating schema")
+            log.exception(
+                "Schema from old quake version detected, regenerating schema")
             try:
                 try_to_compile_glib_schemas()
             except subprocess.CalledProcessError:
-                log.exception("Schema in non user-editable location, attempting to continue")
+                log.exception(
+                    "Schema in non user-editable location, attempting to continue")
             schema_source = load_schema()
             self.settings = Settings(schema_source)
-            self.settings.general.set_string("schema-version", guake_version())
+            self.settings.general.set_string("schema-version", quake_version())
 
         log.info("Language previously loaded from: %s", LOCALE_DIR)
 
-        super().__init__(gladefile("guake.glade"))
+        super().__init__(gladefile("quake.glade"))
 
         select_gtk_theme(self.settings)
-        patch_gtk_theme(self.get_widget("window-root").get_style_context(), self.settings)
+        patch_gtk_theme(self.get_widget(
+            "window-root").get_style_context(), self.settings)
         self.add_callbacks(self)
 
-        log.info("Guake Terminal %s", guake_version())
+        log.info("Quake Terminal %s", quake_version())
         log.info("VTE %s", vte_version())
         log.info("Gtk %s", gtk_version())
 
@@ -147,21 +150,21 @@ class Guake(SimpleGladeApp):
         self.forceHide = False
 
         # trayicon! Using SVG handles better different OS trays
-        # img = pixmapfile('guake-tray.svg')
+        # img = pixmapfile('quake-tray.svg')
         # trayicon!
-        img = pixmapfile("guake-tray.png")
+        img = pixmapfile("quake-tray.png")
         try:
             import appindicator  # pylint: disable=import-outside-toplevel
         except ImportError:
             self.tray_icon = Gtk.StatusIcon()
             self.tray_icon.set_from_file(img)
-            self.tray_icon.set_tooltip_text(_("Guake Terminal"))
+            self.tray_icon.set_tooltip_text(_("Quake Terminal"))
             self.tray_icon.connect("popup-menu", self.show_menu)
             self.tray_icon.connect("activate", self.show_hide)
         else:
             # TODO PORT test this on a system with app indicator
             self.tray_icon = appindicator.Indicator(
-                _("guake-indicator"), _("guake-tray"), appindicator.CATEGORY_OTHER
+                _("quake-indicator"), _("quake-tray"), appindicator.CATEGORY_OTHER
             )
             self.tray_icon.set_icon(img)
             self.tray_icon.set_status(appindicator.STATUS_ACTIVE)
@@ -177,7 +180,7 @@ class Guake(SimpleGladeApp):
 
         # important widgets
         self.window = self.get_widget("window-root")
-        self.window.set_name("guake-terminal")
+        self.window.set_name("quake-terminal")
         self.window.set_keep_above(True)
         self.mainframe = self.get_widget("mainframe")
         self.mainframe.remove(self.get_widget("notebook-teminals"))
@@ -191,9 +194,10 @@ class Guake(SimpleGladeApp):
         self.background_image_manager = BackgroundImageManager(self.window)
 
         # FullscreenManager
-        self.fullscreen_manager = FullscreenManager(self.settings, self.window, self)
+        self.fullscreen_manager = FullscreenManager(
+            self.settings, self.window, self)
 
-        # Start the file manager (only used by guake.yml so far).
+        # Start the file manager (only used by quake.yml so far).
         self.fm = FileManager()
 
         # Workspace tracking
@@ -204,7 +208,8 @@ class Guake(SimpleGladeApp):
             self.terminal_spawned,
             self.page_deleted,
         )
-        self.notebook_manager.connect("notebook-created", self.notebook_created)
+        self.notebook_manager.connect(
+            "notebook-created", self.notebook_created)
         self.notebook_manager.set_workspace(0)
         self.set_tab_position()
 
@@ -247,7 +252,7 @@ class Guake(SimpleGladeApp):
         # TODO PORT do we still need this?
         # self.window.set_geometry_hints(min_width=1, min_height=1)
 
-        # special trick to avoid the "lost guake on Ubuntu 'Show Desktop'" problem.
+        # special trick to avoid the "lost quake on Ubuntu 'Show Desktop'" problem.
         # DOCK makes the window foundable after having being "lost" after "Show
         # Desktop"
         self.window.set_type_hint(Gdk.WindowTypeHint.DOCK)
@@ -270,28 +275,28 @@ class Guake(SimpleGladeApp):
         if self.settings.general.get_boolean("restore-tabs-startup"):
             self.restore_tabs(suppress_notify=True)
 
-        # Pop-up that shows that guake is working properly (if not
+        # Pop-up that shows that quake is working properly (if not
         # unset in the preferences windows)
         if self.settings.general.get_boolean("use-popup"):
             key = self.settings.keybindingsGlobal.get_string("show-hide")
             keyval, mask = Gtk.accelerator_parse(key)
             label = Gtk.accelerator_get_label(keyval, mask)
-            filename = pixmapfile("guake-notification.png")
+            filename = pixmapfile("quake-notification.png")
             notifier.showMessage(
-                _("Guake Terminal"),
-                _("Guake is now running,\n" "press <b>{!s}</b> to use it.").format(
+                _("Quake Terminal"),
+                _("Quake is now running,\n" "press <b>{!s}</b> to use it.").format(
                     xml_escape(label)
                 ),
                 filename,
             )
 
-        log.info("Guake initialized")
+        log.info("Quake initialized")
 
     def get_notebook(self):
         return self.notebook_manager.get_current_notebook()
 
     def notebook_created(self, nm, notebook, key):
-        notebook.attach_guake(self)
+        notebook.attach_quake(self)
 
         # Tracking when reorder page
         notebook.connect("page-reordered", self.on_page_reorder)
@@ -301,7 +306,7 @@ class Guake(SimpleGladeApp):
         visual = screen.get_rgba_visual()
         if visual and screen.is_composited():
             # NOTE: We should re-realize window when update window visual
-            # Otherwise it may failed, when the Guake it start without compositor
+            # Otherwise it may failed, when the Quake it start without compositor
             self.window.unrealize()
             self.window.set_visual(visual)
             self.window.set_app_paintable(True)
@@ -315,7 +320,7 @@ class Guake(SimpleGladeApp):
             self.window.transparency = False
             self.window.set_visual(screen.get_system_visual())
 
-    # new color methods should be moved to the GuakeTerminal class
+    # new color methods should be moved to the QuakeTerminal class
 
     def _load_palette(self):
         colorRGBA = Gdk.RGBA(0, 0, 0, 0)
@@ -455,7 +460,8 @@ class Guake(SimpleGladeApp):
                 log.info("Palette name %s not found", palette_name)
                 return
             log.debug("Settings palette name to %s", palette_name)
-            self.settings.styleFont.set_string("palette", PALETTES[palette_name])
+            self.settings.styleFont.set_string(
+                "palette", PALETTES[palette_name])
             self.settings.styleFont.set_string("palette-name", palette_name)
             self.set_colors_from_settings()
 
@@ -535,7 +541,8 @@ class Guake(SimpleGladeApp):
     def show_menu(self, status_icon, button, activate_time):
         """Show the tray icon menu."""
         menu = self.get_widget("tray-menu")
-        menu.popup(None, None, None, Gtk.StatusIcon.position_menu, button, activate_time)
+        menu.popup(None, None, None, Gtk.StatusIcon.position_menu,
+                   button, activate_time)
 
     def show_about(self, *args):
         # TODO DBUS ONLY
@@ -684,7 +691,8 @@ class Guake(SimpleGladeApp):
 
         # setting window in all desktops
 
-        window_rect = RectCalculator.set_final_window_rect(self.settings, self.window)
+        window_rect = RectCalculator.set_final_window_rect(
+            self.settings, self.window)
         self.window.stick()
 
         # add tab must be called before window.show to avoid a
@@ -700,7 +708,8 @@ class Guake(SimpleGladeApp):
 
         # this works around an issue in fluxbox
         if not self.fullscreen_manager.is_fullscreen():
-            self.settings.general.triggerOnChangedValue(self.settings.general, "window-height")
+            self.settings.general.triggerOnChangedValue(
+                self.settings.general, "window-height")
 
         time = get_server_time(self.window)
 
@@ -735,8 +744,10 @@ class Guake(SimpleGladeApp):
         # This is here because vte color configuration works only after the
         # widget is shown.
 
-        self.settings.styleFont.triggerOnChangedValue(self.settings.styleFont, "color")
-        self.settings.styleBackground.triggerOnChangedValue(self.settings.styleBackground, "color")
+        self.settings.styleFont.triggerOnChangedValue(
+            self.settings.styleFont, "color")
+        self.settings.styleBackground.triggerOnChangedValue(
+            self.settings.styleBackground, "color")
 
         log.debug("Current window position: %r", self.window.get_position())
         self.restore_pending_terminal_split()
@@ -862,15 +873,21 @@ class Guake(SimpleGladeApp):
         self.settings.styleFont.triggerOnChangedValue(
             self.settings.styleFont, "allow-bold", user_data=user_data
         )
-        self.settings.general.triggerOnChangedValue(self.settings.general, "background-image-file")
+        self.settings.general.triggerOnChangedValue(
+            self.settings.general, "background-image-file")
         self.settings.general.triggerOnChangedValue(
             self.settings.general, "background-image-layout-mode"
         )
-        self.settings.style.triggerOnChangedValue(self.settings.style, "cursor-shape")
-        self.settings.styleFont.triggerOnChangedValue(self.settings.styleFont, "style")
-        self.settings.styleFont.triggerOnChangedValue(self.settings.styleFont, "palette")
-        self.settings.styleFont.triggerOnChangedValue(self.settings.styleFont, "palette-name")
-        self.settings.styleFont.triggerOnChangedValue(self.settings.styleFont, "allow-bold")
+        self.settings.style.triggerOnChangedValue(
+            self.settings.style, "cursor-shape")
+        self.settings.styleFont.triggerOnChangedValue(
+            self.settings.styleFont, "style")
+        self.settings.styleFont.triggerOnChangedValue(
+            self.settings.styleFont, "palette")
+        self.settings.styleFont.triggerOnChangedValue(
+            self.settings.styleFont, "palette-name")
+        self.settings.styleFont.triggerOnChangedValue(
+            self.settings.styleFont, "allow-bold")
         self.settings.styleBackground.triggerOnChangedValue(
             self.settings.styleBackground, "transparency", user_data=user_data
         )
@@ -906,7 +923,7 @@ class Guake(SimpleGladeApp):
             box.show_search_box()
 
     def accel_quit(self, *args):
-        """Callback to prompt the user whether to quit Guake or not."""
+        """Callback to prompt the user whether to quit Quake or not."""
         procs = self.notebook_manager.get_running_fg_processes()
         tabs = self.notebook_manager.get_n_pages()
         notebooks = self.notebook_manager.get_n_notebooks()
@@ -920,10 +937,10 @@ class Guake(SimpleGladeApp):
         ):
             log.debug("Remaining procs=%r", procs)
             if PromptQuitDialog(self.window, procs, tabs, notebooks).quit():
-                log.info("Quitting Guake")
+                log.info("Quitting Quake")
                 Gtk.main_quit()
         else:
-            log.info("Quitting Guake")
+            log.info("Quitting Quake")
             Gtk.main_quit()
 
     def accel_reset_terminal(self, *args):
@@ -937,8 +954,10 @@ class Guake(SimpleGladeApp):
 
     def accel_zoom_in(self, *args):
         """Callback to zoom in."""
-        font = " ".join(self.settings.styleFont.get_string("style").split(" ")[:-1])
-        new_size = int(self.settings.styleFont.get_string("style").split(" ")[-1]) + 1
+        font = " ".join(self.settings.styleFont.get_string(
+            "style").split(" ")[:-1])
+        new_size = int(self.settings.styleFont.get_string(
+            "style").split(" ")[-1]) + 1
         self.settings.styleFont.set_string("style", f"{font} {new_size}")
         for term in self.get_notebook().iter_terminals():
             term.set_font_scale(new_size / (new_size - 1))
@@ -946,8 +965,10 @@ class Guake(SimpleGladeApp):
 
     def accel_zoom_out(self, *args):
         """Callback to zoom out."""
-        font = " ".join(self.settings.styleFont.get_string("style").split(" ")[:-1])
-        new_size = int(self.settings.styleFont.get_string("style").split(" ")[-1]) - 1
+        font = " ".join(self.settings.styleFont.get_string(
+            "style").split(" ")[:-1])
+        new_size = int(self.settings.styleFont.get_string(
+            "style").split(" ")[-1]) - 1
         self.settings.styleFont.set_string("style", f"{font} {new_size}")
         for term in self.get_notebook().iter_terminals():
             term.set_font_scale((new_size - 1) / new_size)
@@ -969,14 +990,16 @@ class Guake(SimpleGladeApp):
         """Callback to increase transparency."""
         transparency = self.settings.styleBackground.get_int("transparency")
         if int(transparency) > 0:
-            self.settings.styleBackground.set_int("transparency", int(transparency) - 2)
+            self.settings.styleBackground.set_int(
+                "transparency", int(transparency) - 2)
         return True
 
     def accel_decrease_transparency(self, *args):
         """Callback to decrease transparency."""
         transparency = self.settings.styleBackground.get_int("transparency")
         if int(transparency) < MAX_TRANSPARENCY:
-            self.settings.styleBackground.set_int("transparency", int(transparency) + 2)
+            self.settings.styleBackground.set_int(
+                "transparency", int(transparency) + 2)
         return True
 
     def accel_toggle_transparency(self, *args):
@@ -1120,13 +1143,13 @@ class Guake(SimpleGladeApp):
             page_num = self.get_notebook().page_num(terminal.get_parent())
             self.get_notebook().rename_page(page_num, self.compute_tab_title(terminal), False)
 
-    def load_cwd_guake_yaml(self, vte) -> dict:
-        # Read the content of .guake.yml in cwd
-        if not self.settings.general.get_boolean("load-guake-yml"):
+    def load_cwd_quake_yaml(self, vte) -> dict:
+        # Read the content of .quake.yml in cwd
+        if not self.settings.general.get_boolean("load-quake-yml"):
             return {}
 
         cwd = Path(vte.get_current_directory())
-        filename = str(cwd.joinpath(".guake.yml"))
+        filename = str(cwd.joinpath(".quake.yml"))
 
         try:
             content = self.fm.read_yaml(filename)
@@ -1141,10 +1164,10 @@ class Guake(SimpleGladeApp):
     def compute_tab_title(self, vte):
         """Compute the tab title"""
 
-        guake_yml = self.load_cwd_guake_yaml(vte)
+        quake_yml = self.load_cwd_quake_yaml(vte)
 
-        if "title" in guake_yml:
-            return guake_yml["title"]
+        if "title" in quake_yml:
+            return quake_yml["title"]
 
         vte_title = vte.get_window_title() or _("Terminal")
         try:
@@ -1152,7 +1175,8 @@ class Guake(SimpleGladeApp):
             if self.display_tab_names == 1 and vte_title.endswith(current_directory):
                 parts = current_directory.split("/")
                 parts = [s[:1] for s in parts[:-1]] + [parts[-1]]
-                vte_title = vte_title[: len(vte_title) - len(current_directory)] + "/".join(parts)
+                vte_title = vte_title[: len(
+                    vte_title) - len(current_directory)] + "/".join(parts)
             if self.display_tab_names == 2:
                 vte_title = current_directory.split("/")[-1]
                 if not vte_title:
@@ -1244,7 +1268,8 @@ class Guake(SimpleGladeApp):
     def terminal_spawned(self, notebook, terminal, pid):
         self.load_config(terminal_uuid=terminal.uuid)
         terminal.handler_ids.append(
-            terminal.connect("window-title-changed", self.on_terminal_title_changed, terminal)
+            terminal.connect("window-title-changed",
+                             self.on_terminal_title_changed, terminal)
         )
 
         # Use to detect if directory has changed
@@ -1312,13 +1337,14 @@ class Guake(SimpleGladeApp):
     def page_deleted(self, *args):
         if not self.get_notebook().has_page():
             self.hide()
-            # avoiding the delay on next Guake show request
+            # avoiding the delay on next Quake show request
             self.add_tab()
         else:
             self.set_terminal_focus()
 
         self.was_deleted_tab = True
-        self.display_tab_names = self.settings.general.get_int("display-tab-names")
+        self.display_tab_names = self.settings.general.get_int(
+            "display-tab-names")
         self.recompute_tabs_titles()
 
     def set_terminal_focus(self):
@@ -1346,13 +1372,15 @@ class Guake(SimpleGladeApp):
 
         if current_term.get_has_selection():
             current_term.copy_clipboard()
-            guake_clipboard = Gtk.Clipboard.get_default(self.window.get_display())
-            search_query = guake_clipboard.wait_for_text()
+            quake_clipboard = Gtk.Clipboard.get_default(
+                self.window.get_display())
+            search_query = quake_clipboard.wait_for_text()
             search_query = quote_plus(search_query)
             if search_query:
                 # TODO: search provider should be selectable.
                 search_url = f"https://www.google.com/search?q={search_query}&safe=off"
-                Gtk.show_uri(self.window.get_screen(), search_url, get_server_time(self.window))
+                Gtk.show_uri(self.window.get_screen(), search_url,
+                             get_server_time(self.window))
         return True
 
     def set_tab_position(self, *args):
@@ -1391,7 +1419,7 @@ class Guake(SimpleGladeApp):
 
     def get_xdg_config_directory(self):
         xdg_config_home = os.environ.get("XDG_CONFIG_HOME", "~/.config")
-        return Path(xdg_config_home, "guake").expanduser()
+        return Path(xdg_config_home, "quake").expanduser()
 
     def save_tabs(self, filename="session.json"):
         config = {
@@ -1426,7 +1454,7 @@ class Guake(SimpleGladeApp):
         session_file = self.get_xdg_config_directory() / filename
         with session_file.open("w", encoding="utf-8") as f:
             json.dump(config, f, ensure_ascii=False, indent=4)
-        log.info("Guake tabs saved to %s", session_file)
+        log.info("Quake tabs saved to %s", session_file)
 
     def restore_tabs(self, filename="session.json", suppress_notify=False):
         session_file = self.get_xdg_config_directory() / filename
@@ -1442,9 +1470,9 @@ class Guake(SimpleGladeApp):
                     session_file,
                     self.get_xdg_config_directory() / f"{filename}.bak",
                 )
-                img_filename = pixmapfile("guake-notification.png")
+                img_filename = pixmapfile("quake-notification.png")
                 notifier.showMessage(
-                    _("Guake Terminal"),
+                    _("Quake Terminal"),
                     _(
                         "Your {session_filename} file is broken, backup to {session_filename}.bak"
                     ).format(session_filename=filename),
@@ -1454,9 +1482,9 @@ class Guake(SimpleGladeApp):
 
         # Check schema_version exist
         if "schema_version" not in config:
-            img_filename = pixmapfile("guake-notification.png")
+            img_filename = pixmapfile("quake-notification.png")
             notifier.showMessage(
-                _("Guake Terminal"),
+                _("Quake Terminal"),
                 _(
                     "Tabs session restore abort.\n"
                     "Your session file ({session_filename}) missing schema_version as key"
@@ -1467,9 +1495,9 @@ class Guake(SimpleGladeApp):
 
         # Check schema version is not higher than current version
         if config["schema_version"] > TABS_SESSION_SCHEMA_VERSION:
-            img_filename = pixmapfile("guake-notification.png")
+            img_filename = pixmapfile("quake-notification.png")
             notifier.showMessage(
-                _("Guake Terminal"),
+                _("Quake Terminal"),
                 _(
                     "Tabs session restore abort.\n"
                     "Your session file schema version is higher than current version "
@@ -1509,7 +1537,8 @@ class Guake(SimpleGladeApp):
                                 if len(tab.get("panes", [])) == 1
                                 else tab.get("directory", None)
                             )
-                            nb.new_page_with_focus(directory, tab["label"], tab["custom_label_set"])
+                            nb.new_page_with_focus(
+                                directory, tab["label"], tab["custom_label_set"])
 
                     # Remove original pages in notebook
                     for i in range(current_pages):
@@ -1524,9 +1553,9 @@ class Guake(SimpleGladeApp):
                 "w", encoding="utf-8"
             ) as f:
                 traceback.print_exc(file=f)
-            img_filename = pixmapfile("guake-notification.png")
+            img_filename = pixmapfile("quake-notification.png")
             notifier.showMessage(
-                _("Guake Terminal"),
+                _("Quake Terminal"),
                 _(
                     "Your {session_filename} schema is broken, backup to {session_filename}.bak, "
                     "and error message has been saved to {session_filename}.log.err.".format(
@@ -1541,10 +1570,11 @@ class Guake(SimpleGladeApp):
 
         # Notify the user
         if self.settings.general.get_boolean("restore-tabs-notify") and not suppress_notify:
-            filename = pixmapfile("guake-notification.png")
-            notifier.showMessage(_("Guake Terminal"), _("Your tabs has been restored!"), filename)
+            filename = pixmapfile("quake-notification.png")
+            notifier.showMessage(_("Quake Terminal"), _(
+                "Your tabs has been restored!"), filename)
 
-        log.info("Guake tabs restored from %s", session_file)
+        log.info("Quake tabs restored from %s", session_file)
 
     def load_background_image(self, filename):
         self.background_image_manager.load_from_file(filename)
