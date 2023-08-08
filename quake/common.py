@@ -1,6 +1,6 @@
 # -*- coding: utf-8; -*-
 """
-Copyright (C) 2007-2013 Guake authors
+Copyright (C) 2007-2013 Quake authors
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -18,6 +18,9 @@ Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301 USA
 """
 
+from quake.paths import IMAGE_DIR
+from quake.paths import GLADE_DIR
+from gi.repository import Gtk
 import logging
 import os
 
@@ -25,10 +28,7 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 gi.require_version("Vte", "2.91")  # vte-0.38
-from gi.repository import Gtk
 
-from guake.paths import GLADE_DIR
-from guake.paths import IMAGE_DIR
 
 log = logging.getLogger(__name__)
 
