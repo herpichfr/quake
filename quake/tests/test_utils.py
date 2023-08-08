@@ -2,8 +2,8 @@
 # pylint: disable=redefined-outer-name
 import os
 
-from guake.utils import FileManager
-from guake.utils import get_process_name
+from quake.utils import FileManager
+from quake.utils import get_process_name
 
 
 def test_file_manager(fs):
