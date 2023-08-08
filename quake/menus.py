@@ -1,11 +1,10 @@
+import logging
+from quake.customcommands import CustomCommands
+from gi.repository import Gtk
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
 
-from guake.customcommands import CustomCommands
-
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -23,7 +22,8 @@ def mk_tab_context_menu(callback_object):
     mi_rename.connect("activate", callback_object.on_rename)
     menu.add(mi_rename)
     mi_reset_custom_colors = Gtk.MenuItem(_("Reset custom colors"))
-    mi_reset_custom_colors.connect("activate", callback_object.on_reset_custom_colors)
+    mi_reset_custom_colors.connect(
+        "activate", callback_object.on_reset_custom_colors)
     menu.add(mi_reset_custom_colors)
     mi_close = Gtk.MenuItem(_("Close"))
     mi_close.connect("activate", callback_object.on_close)
@@ -120,7 +120,8 @@ def mk_terminal_context_menu(terminal, window, settings, callback_object):
     # implementation does not support this at the moment
     if link:
         if len(link) >= FILE_SELECTION_LENGTH:
-            mi.set_label(_("Open Link: {!s}...").format(link[: FILE_SELECTION_LENGTH - 3]))
+            mi.set_label(_("Open Link: {!s}...").format(
+                link[: FILE_SELECTION_LENGTH - 3]))
         else:
             mi.set_label(_("Open Link: {!s}").format(link))
         mi.set_sensitive(True)
@@ -147,7 +148,8 @@ def mk_terminal_context_menu(terminal, window, settings, callback_object):
             filename_str = str(filename)
             if len(filename_str) > FILE_SELECTION_LENGTH:
                 mi.set_label(
-                    _("Quick Open: {!s}...").format(filename_str[: FILE_SELECTION_LENGTH - 3])
+                    _("Quick Open: {!s}...").format(
+                        filename_str[: FILE_SELECTION_LENGTH - 3])
                 )
             else:
                 mi.set_label(_("Quick Open: {!s}").format(filename_str))
