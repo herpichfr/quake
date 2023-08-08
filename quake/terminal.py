@@ -1,6 +1,6 @@
 # -*- coding: utf-8; -*-
 """
-Copyright (C) 2007-2013 Guake authors
+Copyright (C) 2007-2013 Quake authors
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -17,6 +17,15 @@ License along with this program; if not, write to the
 Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301 USA
 """
+from quake.globals import TERMINAL_MATCH_TAGS
+from quake.globals import TERMINAL_MATCH_EXPRS
+from quake.globals import QUICK_OPEN_MATCHERS
+from quake.common import clamp
+from gi.repository import Vte
+from gi.repository import Pango
+from gi.repository import Gtk
+from gi.repository import Gdk
+from gi.repository import GLib
 import code
 import logging
 import os
@@ -40,16 +49,6 @@ import gi
 gi.require_version("Gtk", "3.0")
 gi.require_version("Vte", "2.91")  # vte-0.38
 
-from gi.repository import GLib
-from gi.repository import Gdk
-from gi.repository import Gtk
-from gi.repository import Pango
-from gi.repository import Vte
-
-from guake.common import clamp
-from guake.globals import QUICK_OPEN_MATCHERS
-from guake.globals import TERMINAL_MATCH_EXPRS
-from guake.globals import TERMINAL_MATCH_TAGS
 
 log = logging.getLogger(__name__)
 
@@ -66,7 +65,8 @@ try:
         at_exit_call(libutempter.utempter_remove_added_record)
 except Exception as e:
     libutempter = None
-    sys.stderr.write("[WARN] ===================================================================\n")
+    sys.stderr.write(
+        "[WARN] ===================================================================\n")
     sys.stderr.write("[WARN] Unable to load the library libutempter !\n")
     sys.stderr.write(
         "[WARN] Some feature might not work:\n"
@@ -83,7 +83,7 @@ def halt(loc):
     code.interact(local=loc)
 
 
-__all__ = ["GuakeTerminal"]
+__all__ = ["QuakeTerminal"]
 
 # pylint: enable=anomalous-backslash-in-string
 
@@ -93,18 +93,20 @@ class DropTargets(IntEnum):
     TEXT = 1
 
 
-class GuakeTerminal(Vte.Terminal):
+class QuakeTerminal(Vte.Terminal):
 
     """Just a vte.Terminal with some properties already set."""
 
-    def __init__(self, guake):
+    def __init__(self, quake):
         super().__init__()
-        self.guake = guake
+        self.quake = quake
         self.configure_terminal()
         self.add_matches()
         self.handler_ids = []
-        self.handler_ids.append(self.connect("button-press-event", self.button_press))
-        self.connect("child-exited", self.on_child_exited)  # Call on_child_exited, don't remove it
+        self.handler_ids.append(self.connect(
+            "button-press-event", self.button_press))
+        # Call on_child_exited, don't remove it
+        self.connect("child-exited", self.on_child_exited)
         self.connect("selection-changed", self.copy_on_select)
         self.matched_value = ""
         self.font_scale_index = 0
@@ -120,8 +122,9 @@ class GuakeTerminal(Vte.Terminal):
         self.setup_drag_and_drop()
 
         self.ENVV_EXCLUDE_LIST = ["GDK_BACKEND"]
-        self.envv = [f"{i}={os.environ[i]}" for i in os.environ if i not in self.ENVV_EXCLUDE_LIST]
-        self.envv.append(f"GUAKE_TAB_UUID={self.uuid}")
+        self.envv = [
+            f"{i}={os.environ[i]}" for i in os.environ if i not in self.ENVV_EXCLUDE_LIST]
+        self.envv.append(f"QUAKE_TAB_UUID={self.uuid}")
 
     def setup_drag_and_drop(self):
         self.targets = Gtk.TargetList()
@@ -163,23 +166,26 @@ class GuakeTerminal(Vte.Terminal):
         if self.get_has_selection():
             super().copy_clipboard()
         elif self.matched_value:
-            guake_clipboard = Gtk.Clipboard.get_default(self.guake.window.get_display())
-            guake_clipboard.set_text(self.matched_value, len(self.matched_value))
+            quake_clipboard = Gtk.Clipboard.get_default(
+                self.quake.window.get_display())
+            quake_clipboard.set_text(
+                self.matched_value, len(self.matched_value))
 
     def copy_on_select(self, event):
-        if self.guake.settings.general.get_boolean("copy-on-select") and self.get_has_selection():
+        if self.quake.settings.general.get_boolean("copy-on-select") and self.get_has_selection():
             self.copy_clipboard()
 
     def configure_terminal(self):
         """Sets all customized properties on the terminal"""
-        client = self.guake.settings.general
+        client = self.quake.settings.general
         word_chars = client.get_string("word-chars")
         if word_chars:
             self.set_word_char_exceptions(word_chars)
         self.set_audible_bell(client.get_boolean("use-audible-bell"))
         self.set_sensitive(True)
 
-        cursor_blink_mode = self.guake.settings.style.get_int("cursor-blink-mode")
+        cursor_blink_mode = self.quake.settings.style.get_int(
+            "cursor-blink-mode")
         self.set_property("cursor-blink-mode", cursor_blink_mode)
 
         if (Vte.MAJOR_VERSION, Vte.MINOR_VERSION) >= (0, 50):
@@ -188,22 +194,28 @@ class GuakeTerminal(Vte.Terminal):
         if (Vte.MAJOR_VERSION, Vte.MINOR_VERSION) >= (0, 52):
             try:
                 self.set_cell_height_scale(
-                    self.guake.settings.styleFont.get_double("cell-height-scale")
+                    self.quake.settings.styleFont.get_double(
+                        "cell-height-scale")
                 )
             except:  # pylint: disable=bare-except
-                log.error("set_cell_height_scale not supported by your version of VTE")
+                log.error(
+                    "set_cell_height_scale not supported by your version of VTE")
             try:
                 self.set_cell_width_scale(
-                    self.guake.settings.styleFont.get_double("cell-width-scale")
+                    self.quake.settings.styleFont.get_double(
+                        "cell-width-scale")
                 )
             except:  # pylint: disable=bare-except
-                log.error("set_cell_width_scale not supported by your version of VTE")
+                log.error(
+                    "set_cell_width_scale not supported by your version of VTE")
 
         if (Vte.MAJOR_VERSION, Vte.MINOR_VERSION) >= (0, 56):
             try:
-                self.set_bold_is_bright(self.guake.settings.styleFont.get_boolean("bold-is-bright"))
+                self.set_bold_is_bright(
+                    self.quake.settings.styleFont.get_boolean("bold-is-bright"))
             except:  # pylint: disable=bare-except
-                log.error("set_bold_is_bright not supported by your version of VTE")
+                log.error(
+                    "set_bold_is_bright not supported by your version of VTE")
 
         # TODO PORT is this still the case with the newer vte version?
         # -- Ubuntu has a patch to libvte which disables mouse scrolling in apps
@@ -216,7 +228,7 @@ class GuakeTerminal(Vte.Terminal):
 
     def add_matches(self):
         """Adds all regular expressions declared in
-        guake.globals.TERMINAL_MATCH_EXPRS to the terminal to make vte
+        quake.globals.TERMINAL_MATCH_EXPRS to the terminal to make vte
         highlight text that matches them.
         """
         try:
@@ -226,13 +238,15 @@ class GuakeTerminal(Vte.Terminal):
             VTE_REGEX_FLAGS = 0x40080400
             for expr in TERMINAL_MATCH_EXPRS:
                 tag = self.match_add_regex(
-                    Vte.Regex.new_for_match(expr, len(expr), VTE_REGEX_FLAGS), 0
+                    Vte.Regex.new_for_match(
+                        expr, len(expr), VTE_REGEX_FLAGS), 0
                 )
                 self.match_set_cursor_name(tag, "hand")
 
             for _useless, match, _otheruseless in QUICK_OPEN_MATCHERS:
                 tag = self.match_add_regex(
-                    Vte.Regex.new_for_match(match, len(match), VTE_REGEX_FLAGS), 0
+                    Vte.Regex.new_for_match(
+                        match, len(match), VTE_REGEX_FLAGS), 0
                 )
                 self.match_set_cursor_name(tag, "hand")
         except (
@@ -244,11 +258,13 @@ class GuakeTerminal(Vte.Terminal):
                 if (Vte.MAJOR_VERSION, Vte.MINOR_VERSION) >= (0, 44):
                     compile_flag = GLib.RegexCompileFlags.MULTILINE
                 for expr in TERMINAL_MATCH_EXPRS:
-                    tag = self.match_add_gregex(GLib.Regex.new(expr, compile_flag, 0), 0)
+                    tag = self.match_add_gregex(
+                        GLib.Regex.new(expr, compile_flag, 0), 0)
                     self.match_set_cursor_type(tag, Gdk.CursorType.HAND2)
 
                 for _useless, match, _otheruseless in QUICK_OPEN_MATCHERS:
-                    tag = self.match_add_gregex(GLib.Regex.new(match, compile_flag, 0), 0)
+                    tag = self.match_add_gregex(
+                        GLib.Regex.new(match, compile_flag, 0), 0)
                     self.match_set_cursor_type(tag, Gdk.CursorType.HAND2)
             except GLib.Error as err:  # pylint: disable=catching-non-exception
                 log.error(
@@ -326,7 +342,8 @@ class GuakeTerminal(Vte.Terminal):
         try:
             if pt.exists():
                 lineno = find_lineno(text, pt, lineno, py_func)
-                log.info("File exists: %r, line=%r", pt.absolute().as_posix(), lineno)
+                log.info("File exists: %r, line=%r",
+                         pt.absolute().as_posix(), lineno)
                 return (pt, lineno, colno)
             log.debug("No file found matching: %r", text)
             cwd = self.get_current_directory()
@@ -334,7 +351,8 @@ class GuakeTerminal(Vte.Terminal):
             log.debug("checking file existance: %r", pt)
             if pt.exists():
                 lineno = find_lineno(text, pt, lineno, py_func)
-                log.info("File exists: %r, line=%r", pt.absolute().as_posix(), lineno)
+                log.info("File exists: %r, line=%r",
+                         pt.absolute().as_posix(), lineno)
                 return (pt, lineno, colno)
             log.debug("file does not exist: %s", str(pt))
         except OSError:
@@ -401,7 +419,8 @@ class GuakeTerminal(Vte.Terminal):
         found_matcher = False
         log.debug("matched string: %s", matched_string)
         # First searching in additional matchers
-        use_quick_open = self.guake.settings.general.get_boolean("quick-open-enable")
+        use_quick_open = self.quake.settings.general.get_boolean(
+            "quick-open-enable")
         if use_quick_open:
             found_matcher = self._find_quick_matcher(value)
         if not found_matcher:
@@ -418,7 +437,8 @@ class GuakeTerminal(Vte.Terminal):
                     line_number = g.group(2)
                 else:
                     line_number = None
-                log.info("Quick action executed filename=%s, line=%s", filename, line_number)
+                log.info("Quick action executed filename=%s, line=%s",
+                         filename, line_number)
                 (filepath, ln, _) = self.is_file_on_local_server(filename)
                 if ln:
                     line_number = ln
@@ -433,15 +453,17 @@ class GuakeTerminal(Vte.Terminal):
     def _execute_quick_open(self, filepath, line_number):
         if not filepath:
             return
-        cmdline = self.guake.settings.general.get_string("quick-open-command-line")
+        cmdline = self.quake.settings.general.get_string(
+            "quick-open-command-line")
         if not line_number:
             line_number = ""
         else:
             line_number = str(line_number)
         logging.debug("Opening file %s at line %s", filepath, line_number)
-        resolved_cmdline = cmdline % {"file_path": filepath, "line_number": line_number}
+        resolved_cmdline = cmdline % {
+            "file_path": filepath, "line_number": line_number}
         logging.debug("Command line: %s", resolved_cmdline)
-        quick_open_in_current_terminal = self.guake.settings.general.get_boolean(
+        quick_open_in_current_terminal = self.quake.settings.general.get_boolean(
             "quick-open-in-current-terminal"
         )
         if quick_open_in_current_terminal:
@@ -476,7 +498,8 @@ class GuakeTerminal(Vte.Terminal):
 
     def get_link_under_terminal_cursor(self):
         cursor_position = self.get_cursor_position()
-        matched_string = self.match_check(cursor_position.column, cursor_position.row)
+        matched_string = self.match_check(
+            cursor_position.column, cursor_position.row)
         link = self.handleTerminalMatch(matched_string)
         if link:
             return link
@@ -485,7 +508,7 @@ class GuakeTerminal(Vte.Terminal):
         return self.found_link
 
     def browse_link_under_cursor(self, url=None):
-        # TODO move the call to xdg-open to guake.utils
+        # TODO move the call to xdg-open to quake.utils
         if not self.found_link and url is None:
             return
         url = url if url is not None else self.found_link
@@ -512,7 +535,8 @@ class GuakeTerminal(Vte.Terminal):
 
         super().set_font(font)
 
-    font_scale = property(fset=set_font_scale_index, fget=lambda self: self.font_scale_index)
+    font_scale = property(fset=set_font_scale_index,
+                          fget=lambda self: self.font_scale_index)
 
     def increase_font_size(self):
         self.font_scale += 1
@@ -552,7 +576,7 @@ class GuakeTerminal(Vte.Terminal):
     def spawn_sync_pid(self, directory):
 
         argv = []
-        user_shell = self.guake.settings.general.get_string("default-shell")
+        user_shell = self.quake.settings.general.get_string("default-shell")
         if user_shell and os.path.exists(user_shell):
             argv.append(user_shell)
         else:
@@ -561,7 +585,8 @@ class GuakeTerminal(Vte.Terminal):
             except KeyError:
                 argv.append("/usr/bin/bash")
 
-        login_shell = self.guake.settings.general.get_boolean("use-login-shell")
+        login_shell = self.quake.settings.general.get_boolean(
+            "use-login-shell")
         if login_shell:
             argv.append("--login")
 
@@ -590,7 +615,8 @@ class GuakeTerminal(Vte.Terminal):
             raise TypeError("pid must be an int")
 
         if libutempter is not None:
-            libutempter.utempter_add_record(self.get_pty().get_fd(), os.uname()[1])
+            libutempter.utempter_add_record(
+                self.get_pty().get_fd(), os.uname()[1])
         self.pid = pid
         return pid
 
@@ -673,6 +699,7 @@ class GuakeTerminal(Vte.Terminal):
 
         palette = colors_dict.get("palette", None)
         if isinstance(palette, list):
-            self.custom_palette = [self._color_from_list(col) for col in palette]
+            self.custom_palette = [
+                self._color_from_list(col) for col in palette]
         else:
             self.custom_palette = None
