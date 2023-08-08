@@ -1,6 +1,6 @@
 # -*- coding: utf-8; -*-
 """
-Copyright (C) 2007-2013 Guake authors
+Copyright (C) 2007-2013 Quake authors
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -25,6 +25,12 @@ Boston, MA 02110-1301 USA
 # def p():
 #     print(time.time() - g_start, __file__, inspect.currentframe().f_back.f_lineno)
 
+from quake.utils import save_preferences
+from quake.utils import restore_preferences
+from quake.support import print_support
+from quake.globals import bindtextdomain
+from quake.globals import NAME
+from argparse import ArgumentParser
 import builtins
 import logging
 import os
@@ -37,28 +43,22 @@ from locale import gettext
 
 builtins.__dict__["_"] = gettext
 
-from argparse import ArgumentParser
 
 log = logging.getLogger(__name__)
 
 # Force use X11 backend under wayland before any import of GDK through dependencies.
 # This could fix weird problems under Wayland.
-# But if user set the environment variable GUAKE_ENABLE_WAYLAND, then force
+# But if user set the environment variable QUAKE_ENABLE_WAYLAND, then force
 # use Wayland backend.
 os.environ["GDK_BACKEND"] = "x11"
-if "GUAKE_ENABLE_WAYLAND" in os.environ:
+if "QUAKE_ENABLE_WAYLAND" in os.environ:
     os.environ["GDK_BACKEND"] = "wayland"
 
-from guake.globals import NAME
-from guake.globals import bindtextdomain
-from guake.support import print_support
-from guake.utils import restore_preferences
-from guake.utils import save_preferences
 
 # When we are in the document generation on readthedocs,
 # we do not have paths.py generated
 try:
-    from guake.paths import LOCALE_DIR
+    from quake.paths import LOCALE_DIR
 
     bindtextdomain(NAME, LOCALE_DIR)
 except:  # pylint: disable=bare-except
@@ -69,15 +69,15 @@ except:  # pylint: disable=bare-except
 
 def main():
     """Parses the command line parameters and decide if dbus methods
-    should be called or not. If there is already a guake instance
+    should be called or not. If there is already a quake instance
     running it will be used and a True value will be returned,
     otherwise, false will be returned.
     """
     # Force to xterm-256 colors for compatibility with some old command line programs
     os.environ["TERM"] = "xterm-256color"
-    os.environ["TERM_PROGRAM"] = "guake"
+    os.environ["TERM_PROGRAM"] = "quake"
 
-    # do not use version keywords here, pbr might be slow to find the version of Guake module
+    # do not use version keywords here, pbr might be slow to find the version of Quake module
     parser = ArgumentParser()
     parser.add_argument(
         "path",
@@ -91,7 +91,7 @@ def main():
         dest="version",
         action="store_true",
         default=False,
-        help=_("Show Guake version number and exit"),
+        help=_("Show Quake version number and exit"),
     )
 
     parser.add_argument(
@@ -109,7 +109,7 @@ def main():
         dest="fullscreen",
         action="store_true",
         default=False,
-        help=_("Put Guake in fullscreen mode"),
+        help=_("Put Quake in fullscreen mode"),
     )
 
     parser.add_argument(
@@ -117,7 +117,7 @@ def main():
         dest="unfullscreen",
         action="store_true",
         default=False,
-        help=_("Put Guake out from fullscreen mode"),
+        help=_("Put Quake out from fullscreen mode"),
     )
 
     parser.add_argument(
@@ -134,7 +134,7 @@ def main():
         dest="is_visible",
         action="store_true",
         default=False,
-        help=_("Return 1 if Guake is visible, 0 otherwise"),
+        help=_("Return 1 if Quake is visible, 0 otherwise"),
     )
 
     parser.add_argument(
@@ -142,7 +142,7 @@ def main():
         dest="show",
         action="store_true",
         default=False,
-        help=_("Shows Guake main window"),
+        help=_("Shows Quake main window"),
     )
 
     parser.add_argument(
@@ -150,7 +150,7 @@ def main():
         dest="hide",
         action="store_true",
         default=False,
-        help=_("Hides Guake main window"),
+        help=_("Hides Quake main window"),
     )
 
     parser.add_argument(
@@ -159,7 +159,7 @@ def main():
         dest="show_preferences",
         action="store_true",
         default=False,
-        help=_("Shows Guake preference window"),
+        help=_("Shows Quake preference window"),
     )
 
     parser.add_argument(
@@ -168,7 +168,7 @@ def main():
         dest="show_about",
         action="store_true",
         default=False,
-        help=_("Shows Guake's about info"),
+        help=_("Shows Quake's about info"),
     )
 
     parser.add_argument(
@@ -204,7 +204,8 @@ def main():
         dest="uuid_index",
         action="store",
         default="",
-        help=_("Return the index of the tab with the given terminal UUID, -1 if not found"),
+        help=_(
+            "Return the index of the tab with the given terminal UUID, -1 if not found"),
     )
 
     parser.add_argument(
@@ -268,7 +269,8 @@ def main():
         dest="tab_index",
         action="store",
         default="0",
-        help=_("Specify the tab to rename. Default is 0. Can be used to select tab by UUID."),
+        help=_(
+            "Specify the tab to rename. Default is 0. Can be used to select tab by UUID."),
     )
 
     parser.add_argument(
@@ -292,7 +294,8 @@ def main():
         dest="bgcolor_current",
         action="store",
         default="",
-        help=_("Set the hexadecimal (#rrggbb) background color of " "the current terminal."),
+        help=_(
+            "Set the hexadecimal (#rrggbb) background color of " "the current terminal."),
     )
 
     parser.add_argument(
@@ -300,7 +303,8 @@ def main():
         dest="fgcolor_current",
         action="store",
         default="",
-        help=_("Set the hexadecimal (#rrggbb) foreground color of " "the current terminal."),
+        help=_(
+            "Set the hexadecimal (#rrggbb) foreground color of " "the current terminal."),
     )
 
     parser.add_argument(
@@ -308,7 +312,7 @@ def main():
         dest="palette_name",
         action="store",
         default="",
-        help=_("Change Guake palette scheme"),
+        help=_("Change Quake palette scheme"),
     )
 
     parser.add_argument(
@@ -346,7 +350,8 @@ def main():
         metavar="TITLE",
         action="store",
         default="",
-        help=_("Rename the current tab. Reset to default if TITLE is a " 'single dash "-".'),
+        help=_(
+            "Rename the current tab. Reset to default if TITLE is a " 'single dash "-".'),
     )
 
     parser.add_argument(
@@ -355,7 +360,7 @@ def main():
         dest="quit",
         action="store_true",
         default=False,
-        help=_("Says to Guake go away =("),
+        help=_("Says to Quake go away =("),
     )
 
     parser.add_argument(
@@ -372,7 +377,7 @@ def main():
         dest="save_preferences",
         action="store",
         default=None,
-        help=_("Save Guake preferences to this filename"),
+        help=_("Save Quake preferences to this filename"),
     )
 
     parser.add_argument(
@@ -380,7 +385,7 @@ def main():
         dest="restore_preferences",
         action="store",
         default=None,
-        help=_("Restore Guake preferences from this file"),
+        help=_("Restore Quake preferences from this file"),
     )
 
     parser.add_argument(
@@ -418,7 +423,7 @@ def main():
     if missing_deps:
         print(
             "[ERROR] missing at least one system dependencies. "
-            "You need to install additional packages for Guake to run"
+            "You need to install additional packages for Quake to run"
         )
         print(
             "[ERROR] On Debian/Ubuntu you need to install the following libraries:\n"
@@ -438,19 +443,20 @@ def main():
 
     options = parser.parse_args()
     if options.version:
-        from guake import gtk_version
-        from guake import guake_version
-        from guake import vte_version
-        from guake import vte_runtime_version
+        from quake import gtk_version
+        from quake import quake_version
+        from quake import vte_version
+        from quake import vte_runtime_version
 
-        print(f"Guake Terminal: {guake_version()}")
+        print(f"Quake Terminal: {quake_version()}")
         print(f"VTE: {vte_version()}")
         print(f"VTE runtime: {vte_runtime_version()}")
         print(f"Gtk: {gtk_version()}")
         sys.exit(0)
 
     if options.save_preferences and options.restore_preferences:
-        parser.error("options --save-preferences and --restore-preferences are mutually exclusive")
+        parser.error(
+            "options --save-preferences and --restore-preferences are mutually exclusive")
     if options.save_preferences:
         save_preferences(options.save_preferences)
         sys.exit(0)
@@ -464,14 +470,14 @@ def main():
 
     import dbus
 
-    from guake.dbusiface import DBUS_NAME
-    from guake.dbusiface import DBUS_PATH
-    from guake.dbusiface import DbusManager
-    from guake.guake_logging import setupLogging
+    from quake.dbusiface import DBUS_NAME
+    from quake.dbusiface import DBUS_PATH
+    from quake.dbusiface import DbusManager
+    from quake.quake_logging import setupLogging
 
     instance = None
 
-    # Trying to get an already running instance of guake. If it is not
+    # Trying to get an already running instance of quake. If it is not
     # possible, lets create a new instance. This function will return
     # a boolean value depending on this decision.
     try:
@@ -484,15 +490,15 @@ def main():
 
         # COLORTERM is an environment variable set by some terminal emulators such as
         # gnome-terminal.
-        # To avoid confusing applications running inside Guake, clean up COLORTERM at startup.
+        # To avoid confusing applications running inside Quake, clean up COLORTERM at startup.
         if "COLORTERM" in os.environ:
             del os.environ["COLORTERM"]
 
-        log.info("Guake not running, starting it")
-        # late loading of the Guake object, to speed up dbus comm
-        from guake.guake_app import Guake
+        log.info("Quake not running, starting it")
+        # late loading of the Quake object, to speed up dbus comm
+        from quake.quake_app import Quake
 
-        instance = Guake()
+        instance = Quake()
         remote_object = DbusManager(instance)
         already_running = False
 
@@ -553,14 +559,16 @@ def main():
 
     if options.split_vertical:
         if options.command:
-            remote_object.v_split_current_terminal_with_command(options.command)
+            remote_object.v_split_current_terminal_with_command(
+                options.command)
         else:
             remote_object.v_split_current_terminal()
         only_show_hide = options.show
 
     if options.split_horizontal:
         if options.command:
-            remote_object.h_split_current_terminal_with_command(options.command)
+            remote_object.h_split_current_terminal_with_command(
+                options.command)
         else:
             remote_object.h_split_current_terminal()
         only_show_hide = options.show
@@ -585,9 +593,11 @@ def main():
 
     if options.tab_index and options.rename_tab:
         try:
-            remote_object.rename_tab_uuid(str(uuid.UUID(options.tab_index)), options.rename_tab)
+            remote_object.rename_tab_uuid(
+                str(uuid.UUID(options.tab_index)), options.rename_tab)
         except ValueError:
-            remote_object.rename_tab(int(options.tab_index), options.rename_tab)
+            remote_object.rename_tab(
+                int(options.tab_index), options.rename_tab)
         only_show_hide = options.show
 
     if options.bgcolor:
@@ -634,13 +644,14 @@ def main():
             return True
 
     if already_running and only_show_hide:
-        # here we know that guake was called without any parameter and
+        # here we know that quake was called without any parameter and
         # it is already running, so, lets toggle its visibility.
         remote_object.show_hide()
 
     if options.execute_startup_script:
         if not already_running:
-            startup_script = instance.settings.general.get_string("startup-script")
+            startup_script = instance.settings.general.get_string(
+                "startup-script")
             if startup_script:
                 log.info("Calling startup script: %s", startup_script)
                 pid = subprocess.Popen(  # pylint: disable=consider-using-with
@@ -654,9 +665,10 @@ def main():
                 log.info("Startup script started with pid: %s", pid)
                 # Please ensure this is the last line !!!!
     else:
-        log.info("--no-startup-script argument defined, so don't execute the startup script")
+        log.info(
+            "--no-startup-script argument defined, so don't execute the startup script")
     if already_running:
-        log.info("Guake is already running")
+        log.info("Quake is already running")
     return already_running
 
 
