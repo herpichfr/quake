@@ -1,6 +1,6 @@
 import re
 
-from guake.globals import QUICK_OPEN_MATCHERS
+from quake.globals import QUICK_OPEN_MATCHERS
 from textwrap import dedent
 
 
