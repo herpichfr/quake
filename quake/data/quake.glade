@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated with glade 3.18.3 -->
-<interface domain="guake">
+<interface domain="quake">
   <requires lib="gtk+" version="3.10"/>
   <object class="GtkMenu" id="tray-menu">
     <property name="visible">True</property>
@@ -44,7 +44,7 @@
   <object class="GtkWindow" id="window-root">
     <property name="can_focus">False</property>
     <property name="has_focus">True</property>
-    <property name="title" translatable="yes">Guake!</property>
+    <property name="title" translatable="yes">Quake!</property>
     <property name="skip_taskbar_hint">True</property>
     <property name="skip_pager_hint">True</property>
     <property name="urgency_hint">True</property>
