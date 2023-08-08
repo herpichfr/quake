@@ -19,6 +19,13 @@ License along with this program; if not, write to the
 Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301 USA
 """
+from quake.globals import ALIGN_TOP
+from quake.globals import ALIGN_RIGHT
+from quake.globals import ALIGN_LEFT
+from quake.globals import ALIGN_CENTER
+from quake.globals import ALIGN_BOTTOM
+from gi.repository import Gtk
+from gi.repository import Gdk
 import enum
 import logging
 import os
@@ -34,13 +41,6 @@ import gi
 gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
 
-from gi.repository import Gdk
-from gi.repository import Gtk
-from guake.globals import ALIGN_BOTTOM
-from guake.globals import ALIGN_CENTER
-from guake.globals import ALIGN_LEFT
-from guake.globals import ALIGN_RIGHT
-from guake.globals import ALIGN_TOP
 
 try:
     from gi.repository import GdkX11
@@ -60,7 +60,7 @@ def get_server_time(widget):
     try:
         return GdkX11.x11_get_server_time(widget.get_window())
     except (TypeError, AttributeError):
-        # Issue: https://github.com/Guake/guake/issues/1071
+        # Issue: https://github.com/Quake/quake/issues/1071
         # Wayland does not seem to like `x11_get_server_time`.
         # Use local timestamp instead
         ts = time.time()
@@ -72,19 +72,19 @@ def save_tabs_when_changed(func):
     """Decorator for save-tabs-when-changed"""
 
     def wrapper(*args, **kwargs):
-        # Find me the Guake!
+        # Find me the Quake!
         clsname = args[0].__class__.__name__
         g = None
-        if clsname == "Guake":
+        if clsname == "Quake":
             g = args[0]
-        elif getattr(args[0], "get_guake", None):
-            g = args[0].get_guake()
+        elif getattr(args[0], "get_quake", None):
+            g = args[0].get_quake()
         elif getattr(args[0], "get_notebook", None):
-            g = args[0].get_notebook().guake
-        elif getattr(args[0], "guake", None):
-            g = args[0].guake
+            g = args[0].get_notebook().quake
+        elif getattr(args[0], "quake", None):
+            g = args[0].quake
         elif getattr(args[0], "notebook", None):
-            g = args[0].notebook.guake
+            g = args[0].notebook.quake
 
         func(*args, **kwargs)
         log.debug("mom, I've been called: %s %s", func.__name__, func)
@@ -98,7 +98,7 @@ def save_tabs_when_changed(func):
 
 def save_preferences(filename):
     # XXX: Hardcode?
-    prefs = subprocess.check_output(["dconf", "dump", "/org/guake/"])
+    prefs = subprocess.check_output(["dconf", "dump", "/org/quake/"])
     with open(filename, "wb") as f:
         f.write(prefs)
 
@@ -107,7 +107,7 @@ def restore_preferences(filename):
     # XXX: Hardcode?
     with open(filename, "rb") as f:
         prefs = f.read()
-    with subprocess.Popen(["dconf", "load", "/org/guake/"], stdin=subprocess.PIPE) as p:
+    with subprocess.Popen(["dconf", "load", "/org/quake/"], stdin=subprocess.PIPE) as p:
         p.communicate(input=prefs)
 
 
@@ -147,7 +147,8 @@ class FileManager:
             or self._cache[filename]["time"] + self._delta < time.monotonic()
         ):
             with open(filename, mode="r", encoding="utf-8") as fd:
-                self._cache[filename] = {"time": time.monotonic(), "content": fd.read()}
+                self._cache[filename] = {
+                    "time": time.monotonic(), "content": fd.read()}
         return self._cache[filename]["content"]
 
 
@@ -167,7 +168,8 @@ class HidePrevention:
     def __init__(self, window):
         """Create a new HidePrevention object like `HidePrevention(window)`"""
         if not isinstance(window, Gtk.Window):
-            raise ValueError(f"window must be of type Gtk.Window, not of type {type(window)}")
+            raise ValueError(
+                f"window must be of type Gtk.Window, not of type {type(window)}")
         self.window = window
 
     def may_hide(self):
@@ -190,10 +192,10 @@ class HidePrevention:
 class FullscreenManager:
     FULLSCREEN_ATTR = "is_fullscreen"
 
-    def __init__(self, settings, window, guake=None):
+    def __init__(self, settings, window, quake=None):
         self.settings = settings
         self.window = window
-        self.guake = guake
+        self.quake = quake
         self.window_state = None
 
     def is_fullscreen(self):
@@ -210,7 +212,7 @@ class FullscreenManager:
         if not window_state & Gdk.WindowState.WITHDRAWN:
             if self.is_fullscreen():
                 self.fullscreen()
-            elif window_state & Gdk.WindowState.FOCUSED and self.guake.hidden:
+            elif window_state & Gdk.WindowState.FOCUSED and self.quake.hidden:
                 self.unfullscreen()
 
     def fullscreen(self):
@@ -237,20 +239,20 @@ class FullscreenManager:
         if self.is_fullscreen():
             if (
                 self.settings.general.get_boolean("fullscreen-hide-tabbar")
-                and self.guake
-                and self.guake.notebook_manager
+                and self.quake
+                and self.quake.notebook_manager
             ):
-                self.guake.notebook_manager.set_notebooks_tabbar_visible(False)
+                self.quake.notebook_manager.set_notebooks_tabbar_visible(False)
         else:
-            if self.guake and self.guake.notebook_manager:
+            if self.quake and self.quake.notebook_manager:
                 v = self.settings.general.get_boolean("window-tabbar")
-                self.guake.notebook_manager.set_notebooks_tabbar_visible(v)
+                self.quake.notebook_manager.set_notebooks_tabbar_visible(v)
 
 
 class RectCalculator:
     @classmethod
     def set_final_window_rect(cls, settings, window):
-        """Sets the final size and location of the main window of guake. The height
+        """Sets the final size and location of the main window of quake. The height
         is the window_height property, width is window_width and the
         horizontal alignment is given by window_alignment.
         """
@@ -259,8 +261,10 @@ class RectCalculator:
         width_percents = settings.general.get_int("window-width")
         halignment = settings.general.get_int("window-halignment")
         valignment = settings.general.get_int("window-valignment")
-        vdisplacement = settings.general.get_int("window-vertical-displacement")
-        hdisplacement = settings.general.get_int("window-horizontal-displacement")
+        vdisplacement = settings.general.get_int(
+            "window-vertical-displacement")
+        hdisplacement = settings.general.get_int(
+            "window-horizontal-displacement")
 
         log.debug("set_final_window_rect")
         log.debug("  height_percents = %s", height_percents)
@@ -284,22 +288,26 @@ class RectCalculator:
 
         if halignment == ALIGN_CENTER:
             log.debug("aligning to center!")
-            window_rect.width = int(float(total_width) * float(width_percents) / 100.0)
+            window_rect.width = int(
+                float(total_width) * float(width_percents) / 100.0)
             window_rect.x += (total_width - window_rect.width) / 2
         elif halignment == ALIGN_LEFT:
             log.debug("aligning to left!")
             window_rect.width = int(
-                float(total_width - hdisplacement) * float(width_percents) / 100.0
+                float(total_width - hdisplacement)
+                * float(width_percents) / 100.0
             )
             window_rect.x += hdisplacement
         elif halignment == ALIGN_RIGHT:
             log.debug("aligning to right!")
             window_rect.width = int(
-                float(total_width - hdisplacement) * float(width_percents) / 100.0
+                float(total_width - hdisplacement)
+                * float(width_percents) / 100.0
             )
             window_rect.x += total_width - window_rect.width - hdisplacement
 
-        window_rect.height = int(float(total_height) * float(height_percents) / 100.0)
+        window_rect.height = int(
+            float(total_height) * float(height_percents) / 100.0)
         if valignment == ALIGN_TOP:
             window_rect.y += vdisplacement
         elif valignment == ALIGN_BOTTOM:
@@ -325,7 +333,7 @@ class RectCalculator:
 
     @classmethod
     def get_final_window_monitor(cls, settings, window):
-        """Gets the final monitor for the main window of guake."""
+        """Gets the final monitor for the main window of quake."""
 
         display = window.get_display()
 
@@ -396,7 +404,8 @@ class BackgroundImageManager:
         self.filename = filename
         img = Gtk.Image.new_from_file(filename)
         pixbuf = img.get_pixbuf()
-        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, pixbuf.get_width(), pixbuf.get_height())
+        surface = cairo.ImageSurface(
+            cairo.FORMAT_ARGB32, pixbuf.get_width(), pixbuf.get_height())
         cr = cairo.Context(surface)
         Gdk.cairo_set_source_pixbuf(cr, pixbuf, 0, 0)
         cr.set_operator(cairo.OPERATOR_SOURCE)
