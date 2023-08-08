@@ -1,7 +1,7 @@
+from gi.repository import Gtk
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
 
 
 class RenameDialog(Gtk.Dialog):
@@ -54,7 +54,7 @@ class PromptQuitDialog(Gtk.MessageDialog):
             tab_str = ""
             notebooks_str = ""
         else:
-            primary_msg = _("Do you really want to quit Guake?")
+            primary_msg = _("Do you really want to quit Quake?")
             if tabs == 1:
                 tab_str = _(" and one tab open")
             else:
@@ -69,15 +69,18 @@ class PromptQuitDialog(Gtk.MessageDialog):
         elif len(procs) == 1:
             proc_str = _("There is a process still running")
         else:
-            proc_str = _("There are {0} processes still running").format(len(procs))
+            proc_str = _("There are {0} processes still running").format(
+                len(procs))
 
         if procs:
-            proc_list = "\n\n" + "\n".join(f"{name} ({pid})" for pid, name in procs)
+            proc_list = "\n\n" + \
+                "\n".join(f"{name} ({pid})" for pid, name in procs)
         else:
             proc_list = ""
 
         self.set_markup(primary_msg)
-        self.format_secondary_markup(f"<b>{proc_str}{tab_str}{notebooks_str}.</b>{proc_list}")
+        self.format_secondary_markup(
+            f"<b>{proc_str}{tab_str}{notebooks_str}.</b>{proc_list}")
 
     def quit(self):
         """Run the "are you sure" dialog for quitting Guake"""
