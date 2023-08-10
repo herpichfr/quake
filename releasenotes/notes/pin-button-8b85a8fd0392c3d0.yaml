@@ -1,3 +1,0 @@
-features:
-  - |
-    - Add a pin button to temporarily prevent hiding when losing focus, closes #2089.

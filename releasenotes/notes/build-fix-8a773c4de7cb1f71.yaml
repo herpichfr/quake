@@ -1,8 +1,0 @@
-fixes:
-  - |
-    Fix the way PBR computes the package version.
-
-translations:
-  - Sweedish
-  - Dutch
-  - Turkish
