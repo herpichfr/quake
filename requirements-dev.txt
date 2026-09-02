@@ -1,0 +1,39 @@
+################################################################################
+# This requirements file has been automatically generated from `Pipfile` with
+# `pipenv-to-requirements`
+#
+#
+# This has been done to maintain backward compatibility with tools and services
+# that do not support `Pipfile` yet.
+#
+# Do NOT edit it directly, use `pipenv install [-d]` to modify `Pipfile` and
+# `Pipfile.lock` and then regenerate `requirements*.txt`.
+################################################################################
+
+-e .
+astroid
+autopep8
+black==21.8b0
+colorlog
+fiximports>=0.1.18
+flake8>=3.8.0,<4.0.0
+flakehell
+mock>=2.0.0
+pathlib2
+pep8
+pew
+pipenv-to-requirements
+pyfakefs
+pyflakes
+pylint
+pytest
+pytest-cov
+pytest-mock
+reno[sphinx]>=2.8.0
+scandir ; python_version > '3.5'
+sphinx-rtd-theme
+sphinxcontrib-programoutput
+toml
+twine
+typed-ast
+yapf
