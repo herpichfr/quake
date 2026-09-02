@@ -40,6 +40,7 @@ from quake.common import hexify_color
 from quake.common import gladefile
 from quake.common import get_binaries_from_path
 from quake.common import ShowableError
+from quake import instance
 from gi.repository import Vte
 from gi.repository import Gtk
 from gi.repository import Gio
@@ -48,7 +49,6 @@ from gi.repository import GLib
 import logging
 import os
 import re
-import shutil
 
 from textwrap import dedent
 
@@ -228,17 +228,30 @@ def html_escape(text):
 def refresh_user_start(settings):
     if not AUTOSTART_FOLDER or not LOGIN_DESTOP_PATH:
         return
+    # Filename is per instance, so two instances with "start at login"
+    # enabled do not overwrite each other's autostart entry.
+    desktop_file = os.path.join(
+        os.path.expanduser(AUTOSTART_FOLDER), instance.autostart_filename()
+    )
     if settings.general.get_boolean("start-at-login"):
         autostart_path = os.path.expanduser(AUTOSTART_FOLDER)
         os.makedirs(autostart_path, exist_ok=True)
-        shutil.copyfile(
-            os.path.join(LOGIN_DESTOP_PATH, "autostart-quake.desktop"),
-            os.path.join(os.path.expanduser(
-                AUTOSTART_FOLDER), "quake.desktop"),
-        )
+        with open(
+            os.path.join(LOGIN_DESTOP_PATH, "autostart-quake.desktop"), encoding="utf-8"
+        ) as f:
+            content = f.read()
+        # Named instance: address it explicitly on the Exec= line, and mark
+        # it in the unlocalized Name= line, so it is distinguishable in a
+        # "Startup Applications" list from the default instance (and from any
+        # other named instance).
+        name = instance.get_instance()
+        exec_suffix = "".join(f" {arg}" for arg in instance.cli_args())
+        name_suffix = f" ({name})" if name else ""
+        content = re.sub(r"(?m)^Exec=quake$", f"Exec=quake{exec_suffix}", content)
+        content = re.sub(r"(?m)^Name=(.*)$", f"Name=\\1{name_suffix}", content)
+        with open(desktop_file, "w", encoding="utf-8") as f:
+            f.write(content)
     else:
-        desktop_file = os.path.join(os.path.expanduser(
-            AUTOSTART_FOLDER), "quake.desktop")
         if os.path.exists(desktop_file):
             os.remove(desktop_file)
 
@@ -698,6 +711,10 @@ class PrefsDialog(SimpleGladeApp):
         # window cleanup handler
         self.window = self.get_widget("config-window")
         self.get_widget("config-window").connect("destroy", self.on_destroy)
+        # Make the instance being configured unambiguous when more than one
+        # is running; leaves the title untouched for the default instance.
+        if instance.get_instance() is not None:
+            self.window.set_title(f"{self.window.get_title()} — {instance.display_name()}")
 
         # images
         ipath = pixmapfile("quake-notification.png")

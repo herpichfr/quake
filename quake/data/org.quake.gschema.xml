@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <schemalist>
-    <schema id="quake" path="/org/quake/">
+    <schema id="quake">
         <child name="general" schema="quake.general"/>
         <child name="style" schema="quake.style"/>
         <child name="keybindings" schema="quake.keybindings"/>
     </schema>
-    <schema id="quake.general" path="/org/quake/general/">
+    <schema id="quake.general">
         <key name="schema-version" type="s">
             <default>''</default>
             <summary>Last used schema version</summary>
@@ -322,7 +322,7 @@
             <description>Copy the selected text.</description>
         </key>
     </schema>
-    <schema id="quake.style" path="/org/quake/style/">
+    <schema id="quake.style">
         <key name="cursor-blink-mode" type="i">
             <default>0</default>
             <summary>Cursor blink mode of the terminal</summary>
@@ -336,7 +336,7 @@
         <child name="font" schema="quake.style.font"/>
         <child name="background" schema="quake.style.background"/>
     </schema>
-    <schema id="quake.style.font" path="/org/quake/style/font/">
+    <schema id="quake.style.font">
         <key name="style" type="s">
             <default>'Monospace 10'</default>
             <summary>Font style.</summary>
@@ -373,7 +373,7 @@
             <description>This can be used to increase the letter spacing. (The font's width is not affected.) Valid values go from 1.0 (default) to 2.0 ("double spacing").</description>
         </key>
     </schema>
-    <schema id="quake.style.background" path="/org/quake/style/background/">
+    <schema id="quake.style.background">
         <key name="transparency" type="i">
             <default>90</default>
             <range min="0" max="100"/>
@@ -381,11 +381,11 @@
             <description>Alpha that will be applied to the terminal background.</description>
         </key>
     </schema>
-    <schema id="quake.keybindings" path="/org/quake/keybindings/">
+    <schema id="quake.keybindings">
         <child name="global" schema="quake.keybindings.global"/>
         <child name="local" schema="quake.keybindings.local"/>
     </schema>
-    <schema id="quake.keybindings.global" path="/org/quake/keybindings/global/">
+    <schema id="quake.keybindings.global">
         <key name="show-hide" type="s">
             <default>'&lt;Alt&gt;s'</default>
             <summary>Keybinding to show/hide quake.</summary>
@@ -397,7 +397,7 @@
             <description>Global keybinding to allow user call quake from each place after it's opened without clicks.</description>
         </key>
     </schema>
-    <schema id="quake.keybindings.local" path="/org/quake/keybindings/local/">
+    <schema id="quake.keybindings.local">
         <key name="search-terminal" type="s">
             <default>'&lt;Control&gt;&lt;Shift&gt;f'</default>
             <summary>Search terminal</summary>
@@ -654,7 +654,7 @@
             <description>Move the terminal split handle right.</description>
         </key>
     </schema>
-    <schema id="quake.hooks" path="/org/quake/hooks/">
+    <schema id="quake.hooks">
         <key name="show" type="s">
             <default>''</default>
             <summary>On show.</summary>

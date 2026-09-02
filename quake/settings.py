@@ -24,9 +24,27 @@ import subprocess
 
 import gi
 
+from quake import instance
+
 gi.require_version("Gtk", "3.0")
 
 log = logging.getLogger(__name__)
+
+# Each entry is (attribute name, schema id, subpath under the instance's
+# dconf root). The schemas in org.quake.gschema.xml are relocatable (they
+# carry no path= attribute), so the actual dconf path is built here from
+# quake.instance.dconf_path(), which differs between quake instances.
+_SCHEMAS = (
+    ("quake", "quake", ""),
+    ("general", "quake.general", "general/"),
+    ("keybindings", "quake.keybindings", "keybindings/"),
+    ("keybindingsGlobal", "quake.keybindings.global", "keybindings/global/"),
+    ("keybindingsLocal", "quake.keybindings.local", "keybindings/local/"),
+    ("styleBackground", "quake.style.background", "style/background/"),
+    ("styleFont", "quake.style.font", "style/font/"),
+    ("style", "quake.style", "style/"),
+    ("hooks", "quake.hooks", "hooks/"),
+)
 
 
 class Settings:
@@ -34,88 +52,17 @@ class Settings:
         Settings.compat()
         Settings.enhanceSetting()
 
-        self.quake = Gio.Settings.new_full(
-            Gio.SettingsSchemaSource.lookup(
-                schema_source, "quake", False), None, None
-        )
-        self.quake.initEnhancements()
-        self.quake.connect("changed", self.quake.triggerOnChangedValue)
+        dconf_root = instance.dconf_path()
 
-        self.general = Gio.Settings.new_full(
-            Gio.SettingsSchemaSource.lookup(
-                schema_source, "quake.general", False),
-            None,
-            None,
-        )
-        self.general.initEnhancements()
-        self.general.connect("changed", self.general.triggerOnChangedValue)
-
-        self.keybindings = Gio.Settings.new_full(
-            Gio.SettingsSchemaSource.lookup(
-                schema_source, "quake.keybindings", False),
-            None,
-            None,
-        )
-        self.keybindings.initEnhancements()
-        self.keybindings.connect(
-            "changed", self.keybindings.triggerOnChangedValue)
-
-        self.keybindingsGlobal = Gio.Settings.new_full(
-            Gio.SettingsSchemaSource.lookup(
-                schema_source, "quake.keybindings.global", False),
-            None,
-            None,
-        )
-        self.keybindingsGlobal.initEnhancements()
-        self.keybindingsGlobal.connect(
-            "changed", self.keybindingsGlobal.triggerOnChangedValue)
-
-        self.keybindingsLocal = Gio.Settings.new_full(
-            Gio.SettingsSchemaSource.lookup(
-                schema_source, "quake.keybindings.local", False),
-            None,
-            None,
-        )
-        self.keybindingsLocal.initEnhancements()
-        self.keybindingsLocal.connect(
-            "changed", self.keybindingsLocal.triggerOnChangedValue)
-
-        self.styleBackground = Gio.Settings.new_full(
-            Gio.SettingsSchemaSource.lookup(
-                schema_source, "quake.style.background", False),
-            None,
-            None,
-        )
-        self.styleBackground.initEnhancements()
-        self.styleBackground.connect(
-            "changed", self.styleBackground.triggerOnChangedValue)
-
-        self.styleFont = Gio.Settings.new_full(
-            Gio.SettingsSchemaSource.lookup(
-                schema_source, "quake.style.font", False),
-            None,
-            None,
-        )
-        self.styleFont.initEnhancements()
-        self.styleFont.connect("changed", self.styleFont.triggerOnChangedValue)
-
-        self.style = Gio.Settings.new_full(
-            Gio.SettingsSchemaSource.lookup(
-                schema_source, "quake.style", False),
-            None,
-            None,
-        )
-        self.style.initEnhancements()
-        self.style.connect("changed", self.style.triggerOnChangedValue)
-
-        self.hooks = Gio.Settings.new_full(
-            Gio.SettingsSchemaSource.lookup(
-                schema_source, "quake.hooks", False),
-            None,
-            None,
-        )
-        self.hooks.initEnhancements()
-        self.hooks.connect("changed", self.hooks.triggerOnChangedValue)
+        for attr, schema_id, subpath in _SCHEMAS:
+            settings = Gio.Settings.new_full(
+                Gio.SettingsSchemaSource.lookup(schema_source, schema_id, False),
+                None,
+                dconf_root + subpath,
+            )
+            settings.initEnhancements()
+            settings.connect("changed", settings.triggerOnChangedValue)
+            setattr(self, attr, settings)
 
     def enhanceSetting():
         def initEnhancements(self):
@@ -136,6 +83,11 @@ class Settings:
         gi.repository.Gio.Settings.triggerOnChangedValue = triggerOnChangedValue
 
     def compat():
+        # This migrates the legacy /apps/quake/ dconf tree (from very old
+        # Guake versions) into /org/quake/. There is no such legacy tree for
+        # a named instance, so only the default instance needs to check.
+        if instance.get_instance() is not None:
+            return
         try:
             if len(subprocess.check_output(["dconf", "dump", "/org/quake/"])) == 0:
                 prefs = subprocess.check_output(

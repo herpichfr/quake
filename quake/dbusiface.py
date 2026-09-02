@@ -24,12 +24,18 @@ import dbus
 import dbus.glib
 import dbus.service
 
+from quake import instance
+
 log = logging.getLogger(__name__)
 
 dbus.glib.threads_init()
 
-DBUS_PATH = "/org/quake/RemoteControl"
-DBUS_NAME = "org.quake.RemoteControl"
+# These are resolved from the quake instance selected by quake.main before
+# this module is imported (quake.instance.set_instance() must run first), so
+# each quake instance owns its own well-known D-Bus name and no two
+# instances collide.
+DBUS_PATH = instance.dbus_path()
+DBUS_NAME = instance.dbus_name()
 
 
 class DbusManager(dbus.service.Object):

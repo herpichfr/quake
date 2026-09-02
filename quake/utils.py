@@ -24,6 +24,7 @@ from quake.globals import ALIGN_RIGHT
 from quake.globals import ALIGN_LEFT
 from quake.globals import ALIGN_CENTER
 from quake.globals import ALIGN_BOTTOM
+from quake import instance
 from gi.repository import Gtk
 from gi.repository import Gdk
 import enum
@@ -97,17 +98,17 @@ def save_tabs_when_changed(func):
 
 
 def save_preferences(filename):
-    # XXX: Hardcode?
-    prefs = subprocess.check_output(["dconf", "dump", "/org/quake/"])
+    prefs = subprocess.check_output(["dconf", "dump", instance.dconf_path()])
     with open(filename, "wb") as f:
         f.write(prefs)
 
 
 def restore_preferences(filename):
-    # XXX: Hardcode?
     with open(filename, "rb") as f:
         prefs = f.read()
-    with subprocess.Popen(["dconf", "load", "/org/quake/"], stdin=subprocess.PIPE) as p:
+    with subprocess.Popen(
+        ["dconf", "load", instance.dconf_path()], stdin=subprocess.PIPE
+    ) as p:
         p.communicate(input=prefs)
 
 

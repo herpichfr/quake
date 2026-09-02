@@ -21,6 +21,7 @@ from quake.split_utils import SplitMover
 from quake.split_utils import FocusMover
 from quake.common import pixmapfile
 from quake import notifier
+from quake import instance
 from gi.repository import Gtk
 from gi.repository import Gdk
 import logging
@@ -223,7 +224,7 @@ class Keybindings:
                 label = Gtk.accelerator_get_label(keyval, mask)
                 filename = pixmapfile("quake-notification.png")
                 notifier.showMessage(
-                    _("Quake Terminal"),
+                    instance.display_name(),
                     _(
                         "A problem happened when binding <b>%s</b> key.\n"
                         "Please use Quake Preferences dialog to choose another "

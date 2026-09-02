@@ -42,7 +42,6 @@ from quake.gsettings import GSettingHandler
 from quake.globals import TABS_SESSION_SCHEMA_VERSION
 from quake.globals import PROMPT_PROCESSES
 from quake.globals import PROMPT_ALWAYS
-from quake.globals import NAME
 from quake.globals import MAX_TRANSPARENCY
 from quake.dialogs import PromptQuitDialog
 from quake.common import pixmapfile
@@ -52,6 +51,7 @@ from quake import vte_version
 from quake import notifier
 from quake import quake_version
 from quake import gtk_version
+from quake import instance
 from gi.repository import Keybinder
 from gi.repository import Gtk
 from gi.repository import Gio
@@ -81,15 +81,11 @@ gi.require_version("Keybinder", "3.0")
 
 log = logging.getLogger(__name__)
 
-instance = None
 RESPONSE_FORWARD = 0
 RESPONSE_BACKWARD = 1
 
 # Disable find feature until python-vte hasn't been updated
 enable_find = False
-
-# Setting gobject program name
-GLib.set_prgname(NAME)
 
 GDK_WINDOW_STATE_WITHDRAWN = 1
 GDK_WINDOW_STATE_ICONIFIED = 2
@@ -102,6 +98,11 @@ class Quake(SimpleGladeApp):
     """Quake main class. Handles specialy the main window."""
 
     def __init__(self):
+        # Program name (hence X11 WM_CLASS) is set per instance, so the
+        # window manager and tools like wmctrl/xprop can tell this quake
+        # instance's window apart from any other instance's.
+        GLib.set_prgname(instance.prgname())
+
         def load_schema():
             log.info("Loading Gnome schema from: %s", SCHEMA_DIR)
 
@@ -158,7 +159,7 @@ class Quake(SimpleGladeApp):
         except ImportError:
             self.tray_icon = Gtk.StatusIcon()
             self.tray_icon.set_from_file(img)
-            self.tray_icon.set_tooltip_text(_("Quake Terminal"))
+            self.tray_icon.set_tooltip_text(instance.display_name())
             self.tray_icon.connect("popup-menu", self.show_menu)
             self.tray_icon.connect("activate", self.show_hide)
         else:
@@ -180,7 +181,11 @@ class Quake(SimpleGladeApp):
 
         # important widgets
         self.window = self.get_widget("window-root")
-        self.window.set_name("quake-terminal")
+        self.window.set_name(instance.widget_name())
+        if instance.get_instance() is not None:
+            # Distinguishes this instance's window in Alt+Tab/the taskbar;
+            # left untouched for the default instance.
+            self.window.set_title(f"{self.window.get_title()} — {instance.display_name()}")
         self.window.set_keep_above(True)
         self.mainframe = self.get_widget("mainframe")
         self.mainframe.remove(self.get_widget("notebook-teminals"))
@@ -1418,8 +1423,7 @@ class Quake(SimpleGladeApp):
         pass
 
     def get_xdg_config_directory(self):
-        xdg_config_home = os.environ.get("XDG_CONFIG_HOME", "~/.config")
-        return Path(xdg_config_home, "quake").expanduser()
+        return instance.config_dir()
 
     def save_tabs(self, filename="session.json"):
         config = {

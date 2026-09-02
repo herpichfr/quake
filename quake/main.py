@@ -86,6 +86,20 @@ def main():
     )
 
     parser.add_argument(
+        "-I",
+        "--instance",
+        dest="instance",
+        action="store",
+        default=None,
+        help=_(
+            "Run/address a named Quake instance, so several independent Quake "
+            "windows (their own keybindings, configuration and D-Bus name) can "
+            "run side by side. Defaults to the QUAKE_INSTANCE environment "
+            "variable, or the unnamed default instance."
+        ),
+    )
+
+    parser.add_argument(
         "-V",
         "--version",
         dest="version",
@@ -442,6 +456,18 @@ def main():
         sys.exit(1)
 
     options = parser.parse_args()
+
+    # Resolve which quake instance this invocation addresses/starts, before
+    # anything below touches GSettings (save/restore-preferences) or D-Bus
+    # (quake.dbusiface, imported further down). "instance" is already used
+    # below as the local variable holding the running Quake application
+    # object, so the quake.instance module is imported under an alias here.
+    from quake import instance as quake_instance
+
+    quake_instance.set_instance(
+        options.instance or quake_instance.resolve_from_environment())
+    quake_instance.export_to_environment()
+
     if options.version:
         from quake import gtk_version
         from quake import quake_version

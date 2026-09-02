@@ -54,6 +54,7 @@ prepare-install: generate-desktop generate-paths generate-mo compile-glib-schema
 
 reset:
 	dconf reset -f /org/quake/
+	dconf reset -f /org/quake-instances/
 
 
 all: clean dev style checks dists test docs
@@ -155,6 +156,53 @@ uninstall-user:
 purge-user: uninstall-user
 	rm -rf ~/.config/quake
 	dconf reset -f /org/quake/
+	dconf reset -f /org/quake-instances/
+
+install-instance: check-instance generate-desktop generate-paths generate-mo compile-glib-schemas-dev
+	# Installs an additional, independent quake instance for the current
+	# user, alongside the one "make install-user" already installed: a
+	# launcher (quake-$(INSTANCE)) that always passes --instance $(INSTANCE),
+	# plus its own menu entries. Requires "make install-user" to have been
+	# run first -- this target reuses that venv rather than creating its own.
+	@test -x "$(LOCAL_BIN)/quake" || \
+		( echo "$(LOCAL_BIN)/quake not found -- run 'make install-user' first"; exit 1 )
+	install -dm755 "$(LOCAL_BIN)"
+	printf '#!/bin/sh\nexec "%s" --instance "%s" "$$@"\n' "$(LOCAL_BIN)/quake" "$(INSTANCE)" \
+		> "$(LOCAL_BIN)/quake-$(INSTANCE)"
+	chmod 755 "$(LOCAL_BIN)/quake-$(INSTANCE)"
+	install -dm755 "$(LOCAL_SHARE)/applications"
+	sed -e 's/^Exec=quake$$/Exec=quake --instance $(INSTANCE)/' \
+	    -e 's/^Name=\(.*\)$$/Name=\1 ($(INSTANCE))/' \
+	    "$(DEV_DATA_DIR)/quake.desktop" > "$(LOCAL_SHARE)/applications/quake-$(INSTANCE).desktop"
+	sed -e 's/^Exec=quake -p$$/Exec=quake --instance $(INSTANCE) -p/' \
+	    -e 's/^Name=\(.*\)$$/Name=\1 ($(INSTANCE))/' \
+	    "$(DEV_DATA_DIR)/quake-prefs.desktop" \
+	    > "$(LOCAL_SHARE)/applications/quake-$(INSTANCE)-prefs.desktop"
+	-update-desktop-database "$(LOCAL_SHARE)/applications" 2>/dev/null
+	@echo
+	@echo "quake instance '$(INSTANCE)' installed for your user only -- no root was used."
+	@echo "  command: $(LOCAL_BIN)/quake-$(INSTANCE)"
+	@echo "  config:  ~/.config/quake/instances/$(INSTANCE)"
+	@echo "  dconf:   /org/quake-instances/$(INSTANCE)/"
+	@echo
+
+uninstall-instance: check-instance
+	rm -f "$(LOCAL_BIN)/quake-$(INSTANCE)"
+	rm -f "$(LOCAL_SHARE)/applications/quake-$(INSTANCE).desktop"
+	rm -f "$(LOCAL_SHARE)/applications/quake-$(INSTANCE)-prefs.desktop"
+
+purge-instance: uninstall-instance
+	rm -rf "$(HOME)/.config/quake/instances/$(INSTANCE)"
+	dconf reset -f "/org/quake-instances/$(INSTANCE)/"
+	rm -f "$(HOME)/.config/autostart/quake-$(INSTANCE).desktop"
+
+check-instance:
+	@if [ -z "$(INSTANCE)" ]; then \
+		echo "Usage: make $(MAKECMDGOALS) INSTANCE=<name>  (letters, digits, '-', '_' only)"; \
+		exit 1; \
+	fi
+	@echo "$(INSTANCE)" | grep -Eq '^[A-Za-z0-9_-]+$$' || \
+		( echo "Invalid INSTANCE name: '$(INSTANCE)' (letters, digits, '-', '_' only)"; exit 1 )
 
 install-locale:
 	for f in $$(find po -iname "*.mo"); do \
