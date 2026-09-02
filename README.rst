@@ -2,10 +2,7 @@
 Quake 3 README
 ==============
 
-|actions-badge|_ |bountysource-badge|_ |docs-badge|_ |translation-badge|_
-
-.. |actions-badge| image:: https://github.com/Quake/quake/actions/workflows/ci.yml/badge.svg
-.. _actions-badge: https://github.com/Quake/quake/actions
+|bountysource-badge|_ |docs-badge|_ |translation-badge|_
 
 .. |bountysource-badge| image:: https://img.shields.io/bountysource/team/quake/activity.svg
 .. _bountysource-badge: https://www.bountysource.com/teams/quake

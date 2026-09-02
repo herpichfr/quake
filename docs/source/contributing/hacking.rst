@@ -24,9 +24,9 @@ python 3 interpreter is forced to Python 3.6.
 Validate your code
 ------------------
 
-We are strict on code styling, with pep8 and pylint running automatically in GitHub Actions
-in order to reject badly shaped patches. Please use the following command to validate all
-python files:
+We are strict on code styling, with pep8 and pylint used to reject badly shaped patches.
+All checks are run locally before committing/pushing; please use the following commands
+to validate all python files:
 
 .. code-block:: bash
 
@@ -83,9 +83,8 @@ is automatically created by PBR.
 PBR also has some magic to generate the version automatically from ``sem-ver`` tag found in the
 commit message. See the ``Makefile``'s ``tag-pbr`` target.
 
-GitHub Actions build
---------------------
+Local validation
+----------------
 
-GitHub Actions automatically check pull requests are compiling and check for code style.
-
-Status of the latest build: https://github.com/Guake/guake/actions
+Before submitting a patch, run ``make style``, ``make check`` and ``make test`` locally
+to confirm the code compiles and follows the project's style guidelines.
